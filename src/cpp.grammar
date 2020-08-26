@@ -1,33 +1,38 @@
 @precedence {
-  prec_18
-  prec_16
-  prec_15
-  prec_15_r @right
+  capture
+  subscript
   arguments
-  prec_14
-  prec_13_l @left
-  prec_13_r @right
-  prec_12_l @left
-  prec_12
-  prec_11_l @left
-  prec_10_l @left
-  prec_9_l @left
-  prec_8
-  prec_7_l @left
-  prec_6_l @left
-  prec_5_l @left
-  prec_4_l @left
-  prec_3_l @left
-  prec_2_l @left
-  prec_2
-  prec_1_l @left
-  prec_1
+  suffix @left
+  pointer @left
+  mult @left
+  add @left
+  bitShift @left
+  sizeof
+  greaterLess @left
+  equal @left
+  bitAnd @left
+  bitXor @left
+  bitOr @left
+  logic @left
+  params
+  array
+  specifiers
+  cast
+  more
   subscriptDesignator
-  prec_0_r @right
-  prec_0_l @left
-  prec_m1
-  prec_m1_r @right
-  prec_m2_r @right
+  return
+  typeIdentifier
+  structName
+  namespace
+  else @right
+  caseLabel
+  simpleTypeIdentifier
+  reference
+  qualifiers
+  statement
+  pack
+  assign @right
+  ternary @right
 }
 
 @top TranslationUnit {
@@ -139,15 +144,15 @@ PreprocCallExpression {
 }
 
 PreprocBinaryExpression {
-  preprocExpression !prec_10_l ArithOp<"+" | "-"> preprocExpression |
-  preprocExpression !prec_11_l ArithOp<"*" | "/" | "%"> preprocExpression |
-  preprocExpression !prec_1_l LogicOp<"||" | "&&"> preprocExpression |
-  preprocExpression !prec_3_l BitOp<"|"> preprocExpression |
-  preprocExpression !prec_4_l BitOp<"^"> preprocExpression |
-  preprocExpression !prec_5_l BitOp<"&"> preprocExpression |
-  preprocExpression !prec_6_l CompareOp<"==" | "!="> preprocExpression |
-  preprocExpression !prec_7_l CompareOp<("<" | ">") "="?> preprocExpression |
-  preprocExpression !prec_9_l BitOp<"<<" | ">>"> preprocExpression
+  preprocExpression !add ArithOp<"+" | "-"> preprocExpression |
+  preprocExpression !mult ArithOp<"*" | "/" | "%"> preprocExpression |
+  preprocExpression !logic LogicOp<"||" | "&&"> preprocExpression |
+  preprocExpression !bitOr BitOp<"|"> preprocExpression |
+  preprocExpression !bitXor BitOp<"^"> preprocExpression |
+  preprocExpression !bitAnd BitOp<"&"> preprocExpression |
+  preprocExpression !equal CompareOp<"==" | "!="> preprocExpression |
+  preprocExpression !greaterLess CompareOp<("<" | ">") "="?> preprocExpression |
+  preprocExpression !bitShift BitOp<"<<" | ">>"> preprocExpression
 }
 
 FunctionDefinition {
@@ -235,20 +240,20 @@ declarator {
 
 fieldDeclarator {
   PointerDeclarator {
-    MsBasedModifier? "*" !prec_0_r MsPointerModifier* TypeQualifier* fieldDeclarator
+    MsBasedModifier? "*" MsPointerModifier* TypeQualifier* fieldDeclarator
   } |
   FunctionDeclarator {
-    fieldDeclarator !prec_1 ParameterList !prec_0_r (TypeQualifier | VirtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType)*
+    fieldDeclarator !params ParameterList (TypeQualifier | virtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType)*
   } |
   ArrayDeclarator {
-    fieldDeclarator !prec_1 "[" TypeQualifier* (expression | "*")? "]"
+    fieldDeclarator !array "[" TypeQualifier* (expression | "*")? "]"
   } |
   ParenthesizedDeclarator {
     "(" fieldDeclarator ")"
   } |
   FieldIdentifier |
   ReferenceDeclarator {
-    ("&" | "&&") !prec_0_r fieldDeclarator
+    ("&" | "&&") fieldDeclarator
   } |
   TemplateMethod |
   OperatorName
@@ -279,44 +284,44 @@ ParenthesizedTypeDeclarator {
 }
 
 AbstractParenthesizedDeclarator {
-  !prec_1 "(" !prec_1 abstractDeclarator !prec_1 ")" !prec_1
+  "(" abstractDeclarator ")"
 }
 
 PointerDeclarator {
-  !prec_0_r MsBasedModifier? !prec_0_r "*" !prec_0_r MsPointerModifier* !prec_0_r TypeQualifier* !prec_0_r declarator !prec_0_r
+  MsBasedModifier? "*" MsPointerModifier* TypeQualifier* declarator
 }
 
 PointerTypeDeclarator {
-  !prec_0_r MsBasedModifier? !prec_0_r "*" !prec_0_r MsPointerModifier* !prec_0_r TypeQualifier* !prec_0_r typeDeclarator !prec_0_r
+  MsBasedModifier? "*" MsPointerModifier* TypeQualifier* typeDeclarator
 }
 
 AbstractPointerDeclarator {
-  "*" (!prec_0_r TypeQualifier)* (!prec_0_r abstractDeclarator)?
+  "*" (!qualifiers TypeQualifier)* abstractDeclarator?
 }
 
 FunctionDeclarator {
-  declarator !prec_1 ParameterList !prec_1 AttributeSpecifier*
-  (!prec_1 (TypeQualifier | VirtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType))*
+  declarator !params ParameterList !specifiers AttributeSpecifier*
+  (!specifiers (TypeQualifier | virtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType))*
 }
 
 FunctionTypeDeclarator {
-  !prec_1 typeDeclarator !prec_1 ParameterList !prec_1
+  typeDeclarator !params ParameterList
 }
 
 AbstractFunctionDeclarator {
-  abstractDeclarator? !prec_1 ParameterList (TypeQualifier | Noexcept | ThrowSpecifier)* !prec_0_r TrailingReturnType?
+  abstractDeclarator? !params ParameterList (TypeQualifier | Noexcept | ThrowSpecifier)* !return TrailingReturnType?
 }
 
 ArrayDeclarator {
-  !prec_1 declarator !prec_1 "[" !prec_1 TypeQualifier* !prec_1 (expression | "*")? !prec_1 "]" !prec_1
+  declarator !array "[" TypeQualifier* (expression | "*")? "]"
 }
 
 ArrayTypeDeclarator {
-  !prec_1 typeDeclarator !prec_1 "[" !prec_1 TypeQualifier* !prec_1 (expression | "*")? !prec_1 "]" !prec_1
+  typeDeclarator !array "[" TypeQualifier* (expression | "*")? "]"
 }
 
 AbstractArrayDeclarator {
-  !prec_1 abstractDeclarator? !prec_1 "[" !prec_1 TypeQualifier* !prec_1 (expression | "*")? !prec_1 "]" !prec_1
+  abstractDeclarator? !array "[" TypeQualifier* (expression | "*")? "]"
 }
 
 InitDeclarator {
@@ -325,7 +330,7 @@ InitDeclarator {
 }
 
 CompoundStatement {
-  !prec_m1 "{" topLevelItem* !prec_m1 "}"
+  !statement "{" topLevelItem* !statement "}"
 }
 
 StorageClassSpecifier {
@@ -355,7 +360,7 @@ typeSpecifier {
   Auto |
   DependentType |
   Decltype |
-  (!prec_0_r ScopedTypeIdentifier !prec_0_r | !prec_0_r TypeIdentifier !prec_0_r)
+  (ScopedTypeIdentifier !simpleTypeIdentifier | TypeIdentifier !simpleTypeIdentifier)
 }
 
 SizedTypeSpecifier {
@@ -363,7 +368,7 @@ SizedTypeSpecifier {
 }
 
 EnumSpecifier {
-  kw<"enum"> (kw<"class"> | kw<"struct">)? !prec_0_r (className enumBaseClause? EnumeratorList? | EnumeratorList)
+  kw<"enum"> (kw<"class"> | kw<"struct">)? !structName (className enumBaseClause? EnumeratorList? | EnumeratorList)
 }
 
 EnumeratorList {
@@ -371,11 +376,11 @@ EnumeratorList {
 }
 
 StructSpecifier {
-  kw<"struct"> MsDeclspecModifier? !prec_0_r (className | className? VirtualSpecifier? BaseClassClause? FieldDeclarationList)
+  kw<"struct"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
 }
 
 UnionSpecifier {
-  !prec_0_r kw<"union"> !prec_0_r MsDeclspecModifier? !prec_0_r (className | className? VirtualSpecifier? BaseClassClause? FieldDeclarationList) !prec_0_r
+  kw<"union"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
 }
 
 FieldDeclarationList {
@@ -404,7 +409,7 @@ fieldDeclarationListItem {
 }
 
 FieldDeclaration {
-  Attribute* VirtualFunctionSpecifier? declarationSpecifiers commaSep<fieldDeclarator> (BitfieldClause | InitializerList | "=" (expression | InitializerList))? ";"
+  Attribute* kw<"virtual">? declarationSpecifiers commaSep<fieldDeclarator> (BitfieldClause | InitializerList | "=" (expression | InitializerList))? ";"
 }
 
 BitfieldClause {
@@ -455,7 +460,7 @@ ExpressionStatement {
 }
 
 IfStatement {
-  kw<"if"> kw<"constexpr">? ConditionClause statement (!prec_0_r kw<"else"> statement)?
+  kw<"if"> kw<"constexpr">? ConditionClause statement (!else kw<"else"> statement)?
 }
 
 SwitchStatement {
@@ -463,7 +468,7 @@ SwitchStatement {
 }
 
 CaseStatement {
-  (kw<"case"> expression | kw<"default">) ":" (!prec_0_r (nonCaseStatement | Declaration | TypeDefinition))*
+  (kw<"case"> expression | kw<"default">) ":" (!caseLabel (nonCaseStatement | Declaration | TypeDefinition))*
 }
 
 WhileStatement {
@@ -523,59 +528,60 @@ expression {
   DeleteExpression |
   LambdaExpression |
   ParameterPackExpansion |
-  Nullptr |
-  This |
+  kw<"nullptr"> |
+  kw<"this"> |
   RawStringLiteral
 }
 
 CommaExpression {
-  expression !prec_1 "," (expression | CommaExpression)
+  expression !more "," (expression | CommaExpression)
 }
 
 ConditionalExpression {
-  expression !prec_m2_r "?" expression ":" expression
+  expression !ternary "?" expression ":" expression
 }
 
 assignmentLeftExpression {
   (Identifier |
-  CallExpression |
-  FieldExpression |
-  PointerExpression |
-  SubscriptExpression |
-  ParenthesizedExpression |
-  ScopedNamespaceIdentifier) !prec_m1_r
+   CallExpression |
+   FieldExpression |
+   PointerExpression |
+   SubscriptExpression |
+   ParenthesizedExpression |
+   ScopedNamespaceIdentifier)
+  !assign // FIXME why is this necessary?
 }
 
 AssignmentExpression {
-  !prec_m1_r assignmentLeftExpression !prec_m1_r ("=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=") !prec_m1_r expression !prec_m1_r
+  assignmentLeftExpression !assign ("=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=") expression
 }
 
 PointerExpression {
-  !prec_12_l ("*" | "&") !prec_12_l expression !prec_12_l
+  ("*" | "&") !pointer expression
 }
 
 UnaryExpression {
-  !prec_13_l UnaryOp !prec_13_l expression !prec_13_l
+  UnaryOp !suffix expression
 }
 
 BinaryExpression {
-  expression !prec_10_l ArithOp<"+" | "-"> expression |
-  expression !prec_11_l ArithOp<"*" | "/" | "%"> expression |
-  expression !prec_1_l LogicOp<"||" | "&&"> expression |
-  expression !prec_3_l BitOp<"|"> expression |
-  expression !prec_4_l BitOp<"^"> expression |
-  expression !prec_5_l BitOp<"&"> expression |
-  expression !prec_6_l CompareOp<"==" | "!="> expression |
-  expression !prec_7_l CompareOp<("<" | ">") "="?> expression |
-  expression !prec_9_l BitOp<"<<" | ">>"> expression
+  expression !add ArithOp<"+" | "-"> expression |
+  expression !mult ArithOp<"*" | "/" | "%"> expression |
+  expression !logic LogicOp<"||" | "&&"> expression |
+  expression !bitOr BitOp<"|"> expression |
+  expression !bitXor BitOp<"^"> expression |
+  expression !bitAnd BitOp<"&"> expression |
+  expression !equal CompareOp<"==" | "!="> expression |
+  expression !greaterLess CompareOp<("<" | ">") "="?> expression |
+  expression !bitShift BitOp<"<<" | ">>"> expression
 }
 
 UpdateExpression {
-  ("--" | "++") expression | expression !prec_13_r ("--" | "++")
+  ("--" | "++") expression | expression !suffix ("--" | "++")
 }
 
 CastExpression {
-  !prec_12 "(" !prec_12 TypeDescriptor !prec_12 ")" !prec_12 expression !prec_12
+  "(" TypeDescriptor ")" expression
 }
 
 TypeDescriptor {
@@ -583,12 +589,12 @@ TypeDescriptor {
 }
 
 SizeofExpression {
-  !prec_8 kw<"sizeof"> !prec_8 (expression | "(" TypeDescriptor ")") !prec_8 |
+  kw<"sizeof"> !sizeof (expression | "(" TypeDescriptor ")") |
   kw<"sizeof"> "..." "(" Identifier ")"
 }
 
 SubscriptExpression {
-  !prec_16 expression !prec_16 "[" !prec_16 expression !prec_16 "]" !prec_16
+  expression !subscript "[" expression "]"
 }
 
 CallExpression {
@@ -601,8 +607,8 @@ ArgumentList {
 }
 
 FieldExpression {
-  expression !prec_15 ("." | "->") FieldIdentifier |
-  expression !prec_15 ("." | "->") (DestructorName | TemplateMethod)
+  expression !subscript ("." | "->") FieldIdentifier |
+  expression !subscript ("." | "->") (DestructorName | TemplateMethod)
 }
 
 CompoundLiteralExpression {
@@ -645,7 +651,7 @@ ConcatenatedString {
 }
 
 TypeIdentifier {
-  !prec_0_r identifier !prec_0_r
+  !typeIdentifier identifier
 }
 
 FieldIdentifier {
@@ -669,33 +675,28 @@ Decltype {
 }
 
 ClassSpecifier {
-  !prec_0_r kw<"class"> !prec_0_r MsDeclspecModifier? !prec_0_r (className | className? VirtualSpecifier? BaseClassClause? FieldDeclarationList) !prec_0_r
+  kw<"class"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
 }
 
 className {
-  !prec_0_r (TypeIdentifier | ScopedTypeIdentifier | TemplateType) !prec_0_r
+  (TypeIdentifier | ScopedTypeIdentifier | TemplateType) !structName
 }
 
-VirtualSpecifier {
-  kw<"final"> |
-  kw<"override">
-}
-
-VirtualFunctionSpecifier {
-  kw<"virtual">
+virtualSpecifier {
+  @specialize[name=VirtualSpecifier]<identifier, "final" | "override">
 }
 
 ExplicitFunctionSpecifier {
   kw<"explicit"> |
-  kw<"explicit"> !prec_14 "(" expression ")"
+  kw<"explicit"> !arguments "(" expression ")"
 }
 
 BaseClassClause {
-  ":" commaSep1<(kw<"public"> | kw<"private"> | kw<"protected">)? className "..."?>
+  ":" commaSep1<access? className "..."?>
 }
 
 enumBaseClause {
-  !prec_0_l ":" !prec_0_l (ScopedTypeIdentifier | TypeIdentifier | SizedTypeSpecifier) !prec_0_l
+  ":" !typeIdentifier (ScopedTypeIdentifier | TypeIdentifier | SizedTypeSpecifier)
 }
 
 Auto {
@@ -727,11 +728,11 @@ TemplateParameterList {
 }
 
 TypeParameterDeclaration {
-  !prec_1 (kw<"typename"> | kw<"class">) !prec_1 TypeIdentifier? !prec_1
+  (kw<"typename"> | kw<"class">) !typeIdentifier TypeIdentifier?
 }
 
 VariadicTypeParameterDeclaration {
-  !prec_1 (kw<"typename"> | kw<"class">) !prec_1 "..." !prec_1 TypeIdentifier? !prec_1
+  (kw<"typename"> | kw<"class">) "..." !typeIdentifier TypeIdentifier?
 }
 
 OptionalTypeParameterDeclaration {
@@ -759,7 +760,7 @@ VariadicReferenceDeclarator {
 }
 
 OperatorCast {
-  !prec_1 ((NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? "::")? !prec_1 kw<"operator"> !prec_1 declarationSpecifiers !prec_1 abstractDeclarator !prec_1
+  ((NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? "::")? kw<"operator"> declarationSpecifiers !cast abstractDeclarator
 }
 
 FieldInitializerList {
@@ -767,28 +768,28 @@ FieldInitializerList {
 }
 
 FieldInitializer {
-  !prec_1 (FieldIdentifier | ScopedFieldIdentifier) !arguments (InitializerList | ArgumentList) !prec_1 "..."? !prec_1
+  (FieldIdentifier | ScopedFieldIdentifier) !arguments (InitializerList | ArgumentList) "..."?
 }
 
 InlineMethodDefinition {
-  Attribute* VirtualFunctionSpecifier? declarationSpecifiers
-  fieldDeclarator (CompoundStatement | !prec_1 DefaultMethodClause | DeleteMethodClause)
+  Attribute* kw<"virtual">? declarationSpecifiers
+  fieldDeclarator (CompoundStatement | !more DefaultMethodClause | DeleteMethodClause)
 }
 
 OperatorCastDefinition {
-  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~specifiers (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? OperatorCast (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
+  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~specifiers (kw<"virtual"> | ExplicitFunctionSpecifier)? OperatorCast (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
 OperatorCastDeclaration {
-  (VirtualFunctionSpecifier | ExplicitFunctionSpecifier)? OperatorCast ("=" expression)? ";"
+  (kw<"virtual"> | ExplicitFunctionSpecifier)? OperatorCast ("=" expression)? ";"
 }
 
 ConstructorOrDestructorDefinition {
-  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~specifiers (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? FunctionDeclarator FieldInitializerList? (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
+  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~specifiers (kw<"virtual"> | ExplicitFunctionSpecifier)? FunctionDeclarator FieldInitializerList? (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
 ConstructorOrDestructorDeclaration {
-  (VirtualFunctionSpecifier | ExplicitFunctionSpecifier)? FunctionDeclarator ";"
+  (kw<"virtual"> | ExplicitFunctionSpecifier)? FunctionDeclarator ";"
 }
 
 DefaultMethodClause {
@@ -804,15 +805,15 @@ FriendDeclaration {
 }
 
 AccessSpecifier {
-  (kw<"public"> | kw<"private"> | kw<"protected">) ":"
+  access ":"
 }
 
 ReferenceDeclarator {
-  !prec_0_r ("&" | "&&") !prec_0_r declarator !prec_0_r
+  ("&" | "&&") !reference declarator
 }
 
 AbstractReferenceDeclarator {
-  !prec_0_r ("&" | "&&") !prec_0_r abstractDeclarator? !prec_0_r
+  ("&" | "&&") (!reference abstractDeclarator)?
 }
 
 StructuredBindingDeclarator {
@@ -824,7 +825,7 @@ TrailingReturnType {
 }
 
 Noexcept {
-  kw<"noexcept"> (!prec_0_r "(" expression? ")")?
+  kw<"noexcept"> (!arguments "(" expression? ")")?
 }
 
 ThrowSpecifier {
@@ -896,11 +897,11 @@ NewExpression {
 }
 
 NewDeclarator {
-  "[" expression "]" (!prec_0_r NewDeclarator)?
+  "[" expression "]" (!more NewDeclarator)?
 }
 
 DeleteExpression {
-  "::"? kw<"delete"> (!prec_1 "[" "]")? expression
+  "::"? kw<"delete"> (!more "[" "]")? expression
 }
 
 LambdaExpression {
@@ -913,44 +914,38 @@ LambdaCaptureSpecifier {
     commaSep1<expression> |
     LambdaDefaultCapture "," commaSep1<expression> |
     ""
-  ) "]" !prec_18
+  ) "]" !capture
 }
 
 ParameterPackExpansion {
-  expression !prec_m1 "..."
+  expression !pack "..."
 }
 
 DestructorName {
-  !prec_1 "~" Identifier
+  "~" Identifier
 }
 
 ScopedFieldIdentifier {
-  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" (FieldIdentifier | OperatorName | DestructorName)
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace "::" (FieldIdentifier | OperatorName | DestructorName)
 }
 
 ScopedIdentifier {
-  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" (Identifier | OperatorName | DestructorName)
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace "::" (Identifier | OperatorName | DestructorName)
 }
 
 ScopedTypeIdentifier {
-  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" TypeIdentifier
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace "::" TypeIdentifier
 }
 
 ScopedNamespaceIdentifier {
-  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_2 "::" NamespaceIdentifier
-}
-
-This {
-  kw<"this">
-}
-
-Nullptr {
-  kw<"nullptr">
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace "::" NamespaceIdentifier
 }
 
 NamespaceIdentifier {
-  Identifier
+  identifier !namespace
 }
+
+access { @specialize[name=Access]<identifier, "public" | "private" | "protected"> }
 
 True { @specialize<identifier, "TRUE" | "true"> }
 
