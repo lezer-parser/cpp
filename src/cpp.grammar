@@ -220,17 +220,17 @@ DeclarationList {
 }
 
 declarator {
-  ~c0 ~c1 ~c13 ~c15 PointerDeclarator ~c0 ~c1 ~c13 ~c15 |
-  ~c0 ~c1 ~c13 ~c15 FunctionDeclarator ~c0 ~c1 ~c13 ~c15 |
-  ~c0 ~c1 ~c13 ~c15 ArrayDeclarator ~c0 ~c1 ~c13 ~c15 |
-  ~c0 ~c1 ~c13 ~c15 ParenthesizedDeclarator ~c0 ~c1 ~c13 ~c15 |
-  ~c0 ~c1 ~c13 ~c15 Identifier ~c0 ~c1 ~c13 ~c15 |
-  ~c0 ~c1 ~c13 ~c15 ReferenceDeclarator ~c0 ~c1 ~c13 ~c15 |
-  ~c0 ~c1 ~c13 ~c15 ScopedIdentifier ~c0 ~c1 ~c13 ~c15 |
-  ~c0 ~c1 ~c13 ~c15 TemplateFunction ~c0 ~c1 ~c13 ~c15 |
-  ~c0 ~c1 ~c13 ~c15 OperatorName ~c0 ~c1 ~c13 ~c15 |
-  ~c0 ~c1 ~c13 ~c15 DestructorName ~c0 ~c1 ~c13 ~c15 |
-  ~c0 ~c1 ~c13 ~c15 StructuredBindingDeclarator ~c0 ~c1 ~c13 ~c15
+  PointerDeclarator |
+  FunctionDeclarator |
+  ArrayDeclarator |
+  ParenthesizedDeclarator |
+  Identifier ~c0 ~c1 ~c13 ~c15 |
+  ReferenceDeclarator |
+  ScopedIdentifier  ~c0 ~c1 ~c13 ~c15 |
+  TemplateFunction ~c0 ~c1 ~c13 ~c15 |
+  OperatorName |
+  DestructorName |
+  StructuredBindingDeclarator
 }
 
 fieldDeclarator {
@@ -345,25 +345,25 @@ TypeQualifier {
 }
 
 typeSpecifier {
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 StructSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 UnionSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 EnumSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 ClassSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 SizedTypeSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 primitiveType ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 TemplateType ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 Auto ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 DependentType ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 Decltype ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 (!prec_0_r ScopedTypeIdentifier !prec_0_r | !prec_0_r TypeIdentifier !prec_0_r)  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17
+  StructSpecifier |
+  UnionSpecifier |
+  EnumSpecifier |
+  ClassSpecifier |
+  SizedTypeSpecifier |
+  primitiveType |
+  TemplateType |
+  Auto |
+  DependentType |
+  Decltype |
+  (!prec_0_r ScopedTypeIdentifier !prec_0_r | !prec_0_r TypeIdentifier !prec_0_r)
 }
 
 SizedTypeSpecifier {
-  ~c5 (kw<"signed"> | kw<"unsigned"> | kw<"long"> | kw<"short">)+ ~c5 (TypeIdentifier | primitiveType)? ~c5
+  (kw<"signed"> | kw<"unsigned"> | kw<"long"> | kw<"short">)+ (TypeIdentifier | primitiveType)?
 }
 
 EnumSpecifier {
-  !prec_0_l kw<"enum"> !prec_0_l (kw<"class"> | kw<"struct">)? !prec_0_l (className enumBaseClause? EnumeratorList? | EnumeratorList) !prec_0_l
+  kw<"enum"> (kw<"class"> | kw<"struct">)? !prec_0_r (className enumBaseClause? EnumeratorList? | EnumeratorList)
 }
 
 EnumeratorList {
@@ -371,7 +371,7 @@ EnumeratorList {
 }
 
 StructSpecifier {
-  !prec_0_r kw<"struct"> !prec_0_r MsDeclspecModifier? !prec_0_r (className | className? VirtualSpecifier? BaseClassClause? FieldDeclarationList) !prec_0_r
+  kw<"struct"> MsDeclspecModifier? !prec_0_r (className | className? VirtualSpecifier? BaseClassClause? FieldDeclarationList)
 }
 
 UnionSpecifier {
@@ -496,36 +496,36 @@ GotoStatement {
 }
 
 expression {
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 ConditionalExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 AssignmentExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 BinaryExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 UnaryExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 UpdateExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 CastExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 PointerExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 SizeofExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 SubscriptExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 CallExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 FieldExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 CompoundLiteralExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 Identifier ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 NumberLiteral ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 StringLiteral ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 True ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 False ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 kw<"NULL"> ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 ConcatenatedString ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 CharLiteral ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 ParenthesizedExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 TemplateFunction ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 ScopedIdentifier ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 NewExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 DeleteExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 LambdaExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 ParameterPackExpansion ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 Nullptr ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 This ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 RawStringLiteral ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15
+  ConditionalExpression |
+  AssignmentExpression |
+  BinaryExpression |
+  UnaryExpression |
+  UpdateExpression |
+  CastExpression |
+  PointerExpression |
+  SizeofExpression |
+  SubscriptExpression |
+  CallExpression |
+  FieldExpression |
+  CompoundLiteralExpression |
+  Identifier ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  NumberLiteral |
+  StringLiteral |
+  True |
+  False |
+  kw<"NULL"> |
+  ConcatenatedString |
+  CharLiteral |
+  ParenthesizedExpression |
+  TemplateFunction ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ScopedIdentifier ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  NewExpression |
+  DeleteExpression |
+  LambdaExpression |
+  ParameterPackExpansion |
+  Nullptr |
+  This |
+  RawStringLiteral
 }
 
 CommaExpression {
@@ -601,8 +601,8 @@ ArgumentList {
 }
 
 FieldExpression {
-  ~c9 expression !prec_15 ("." | "->") ~c9 FieldIdentifier ~c9 |
-  ~c9 expression !prec_15 ("." | "->") ~c9 (DestructorName | TemplateMethod) ~c9
+  expression !prec_15 ("." | "->") ~c9 FieldIdentifier |
+  expression !prec_15 ("." | "->") ~c9 (DestructorName | TemplateMethod)
 }
 
 CompoundLiteralExpression {
@@ -832,11 +832,11 @@ ThrowSpecifier {
 }
 
 TemplateType {
-  ~c6 ~c7 ~c9 (TypeIdentifier | ScopedTypeIdentifier) ~c6 ~c7 ~c9 TemplateArgumentList ~c6 ~c7 ~c9
+  (TypeIdentifier | ScopedTypeIdentifier) ~c6 ~c7 ~c9 TemplateArgumentList
 }
 
 TemplateMethod {
-  ~c9 (FieldIdentifier | ScopedFieldIdentifier) ~c9 TemplateArgumentList ~c9
+  (FieldIdentifier | ScopedFieldIdentifier) ~c9 TemplateArgumentList
 }
 
 TemplateFunction {
@@ -917,27 +917,27 @@ LambdaCaptureSpecifier {
 }
 
 ParameterPackExpansion {
-  !prec_m1 expression !prec_m1 "..." !prec_m1
+  expression !prec_m1 "..."
 }
 
 DestructorName {
-  !prec_1 "~" !prec_1 Identifier !prec_1
+  !prec_1 "~" Identifier
 }
 
 ScopedFieldIdentifier {
-  ~c11 !prec_1 (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" !prec_1 (FieldIdentifier | OperatorName | DestructorName) !prec_1 ~c11
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" (FieldIdentifier | OperatorName | DestructorName)
 }
 
 ScopedIdentifier {
-  ~c10 !prec_1 (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" !prec_1 (Identifier | OperatorName | DestructorName) !prec_1 ~c10
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" (Identifier | OperatorName | DestructorName)
 }
 
 ScopedTypeIdentifier {
-  ~c10 ~c11 !prec_1 (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" !prec_1 TypeIdentifier !prec_1 ~c10 ~c11
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" TypeIdentifier
 }
 
 ScopedNamespaceIdentifier {
-  !prec_2 (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_2 "::" !prec_2 NamespaceIdentifier !prec_2
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_2 "::" NamespaceIdentifier
 }
 
 This {
