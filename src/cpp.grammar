@@ -163,7 +163,7 @@ TypeDefinition {
 }
 
 declarationSpecifiers {
-  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)* ~c18 typeSpecifier (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)*
+  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)* ~specifiers typeSpecifier (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)*
 }
 
 LinkageSpecification {
@@ -224,10 +224,10 @@ declarator {
   FunctionDeclarator |
   ArrayDeclarator |
   ParenthesizedDeclarator |
-  Identifier ~c0 ~c1 ~c13 ~c15 |
+  Identifier ~identifier |
   ReferenceDeclarator |
-  ScopedIdentifier  ~c0 ~c1 ~c13 ~c15 |
-  TemplateFunction ~c0 ~c1 ~c13 ~c15 |
+  ScopedIdentifier ~identifier |
+  TemplateFunction ~identifier |
   OperatorName |
   DestructorName |
   StructuredBindingDeclarator
@@ -416,7 +416,7 @@ Enumerator {
 }
 
 ParameterList {
-  "(" ~c16 commaSep<(ParameterDeclaration | OptionalParameterDeclaration | VariadicParameterDeclaration | "...") ~c16> ")"
+  "(" ~argOrParam commaSep<(ParameterDeclaration | OptionalParameterDeclaration | VariadicParameterDeclaration | "...")> ")"
 }
 
 ParameterDeclaration {
@@ -508,7 +508,7 @@ expression {
   CallExpression |
   FieldExpression |
   CompoundLiteralExpression |
-  Identifier ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  Identifier ~identifier |
   NumberLiteral |
   StringLiteral |
   True |
@@ -517,8 +517,8 @@ expression {
   ConcatenatedString |
   CharLiteral |
   ParenthesizedExpression |
-  TemplateFunction ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
-  ScopedIdentifier ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  TemplateFunction ~identifier |
+  ScopedIdentifier ~identifier |
   NewExpression |
   DeleteExpression |
   LambdaExpression |
@@ -592,17 +592,17 @@ SubscriptExpression {
 }
 
 CallExpression {
-  expression ~c17 !arguments ArgumentList |
+  expression !arguments ArgumentList |
   primitiveType !arguments ArgumentList
 }
 
 ArgumentList {
-  "(" ~c16 commaSep<(expression | InitializerList) ~c16> ")"
+  "(" ~argOrParam commaSep<(expression | InitializerList)> ")"
 }
 
 FieldExpression {
-  expression !prec_15 ("." | "->") ~c9 FieldIdentifier |
-  expression !prec_15 ("." | "->") ~c9 (DestructorName | TemplateMethod)
+  expression !prec_15 ("." | "->") FieldIdentifier |
+  expression !prec_15 ("." | "->") (DestructorName | TemplateMethod)
 }
 
 CompoundLiteralExpression {
@@ -776,7 +776,7 @@ InlineMethodDefinition {
 }
 
 OperatorCastDefinition {
-  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~c18 (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? OperatorCast (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
+  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~specifiers (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? OperatorCast (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
 OperatorCastDeclaration {
@@ -784,7 +784,7 @@ OperatorCastDeclaration {
 }
 
 ConstructorOrDestructorDefinition {
-  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~c18 (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? FunctionDeclarator FieldInitializerList? (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
+  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~specifiers (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? FunctionDeclarator FieldInitializerList? (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
 ConstructorOrDestructorDeclaration {
@@ -816,7 +816,7 @@ AbstractReferenceDeclarator {
 }
 
 StructuredBindingDeclarator {
-  "[" commaSep1<Identifier ~c14> "]"
+  "[" commaSep1<Identifier ~identifier> "]"
 }
 
 TrailingReturnType {
@@ -832,15 +832,15 @@ ThrowSpecifier {
 }
 
 TemplateType {
-  (TypeIdentifier | ScopedTypeIdentifier) ~c6 ~c7 ~c9 TemplateArgumentList
+  (TypeIdentifier | ScopedTypeIdentifier) ~identifier TemplateArgumentList
 }
 
 TemplateMethod {
-  (FieldIdentifier | ScopedFieldIdentifier) ~c9 TemplateArgumentList
+  (FieldIdentifier | ScopedFieldIdentifier) ~identifier TemplateArgumentList
 }
 
 TemplateFunction {
-  ~c6 ~c7 ~c8 (Identifier | ScopedIdentifier) ~c6 ~c7 ~c8 TemplateArgumentList ~c6 ~c7 ~c8
+  (Identifier | ScopedIdentifier) ~identifier TemplateArgumentList
 }
 
 TemplateArgumentList {
