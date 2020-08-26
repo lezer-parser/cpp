@@ -1,0 +1,1089 @@
+@precedence {
+  prec_18
+  prec_16
+  prec_15
+  prec_15_r @right
+  prec_14
+  prec_13_l @left
+  prec_13_r @right
+  prec_12_l @left
+  prec_12
+  prec_11_l @left
+  prec_10_l @left
+  prec_9_l @left
+  prec_8
+  prec_7_l @left
+  prec_6_l @left
+  prec_5_l @left
+  prec_4_l @left
+  prec_3_l @left
+  prec_2_l @left
+  prec_2
+  prec_1_l @left
+  prec_1
+  subscriptDesignator
+  prec_0_r @right
+  prec_0_l @left
+  prec_m1
+  prec_m1_r @right
+  prec_m2_r @right
+}
+
+@top TranslationUnit {
+  topLevelItem*
+}
+
+topLevelItem {
+  FunctionDefinition |
+  LinkageSpecification |
+  Declaration |
+  statement |
+  TypeDefinition |
+  emptyDeclaration |
+  PreprocIf |
+  PreprocIfdef |
+  PreprocInclude |
+  PreprocDef |
+  PreprocFunctionDef |
+  PreprocCall |
+  NamespaceDefinition |
+  UsingDeclaration |
+  AliasDeclaration |
+  StaticAssertDeclaration |
+  TemplateDeclaration |
+  TemplateInstantiation |
+  FunctionDefinition { ConstructorOrDestructorDefinition } |
+  FunctionDefinition { OperatorCastDefinition } |
+  Declaration { OperatorCastDeclaration }
+}
+
+PreprocInclude {
+  token_2 (StringLiteral | SystemLibString | Identifier | CallExpression { PreprocCallExpression }) "\n"
+}
+
+PreprocDef {
+  token_3 Identifier PreprocArg? "\n"
+}
+
+PreprocFunctionDef {
+  token_4 Identifier PreprocParams PreprocArg? "\n"
+}
+
+PreprocParams {
+  "(" commaSep<Identifier | "..."> ")"
+}
+
+PreprocCall {
+  PreprocDirective PreprocArg? "\n"
+}
+
+PreprocIf {
+  token_5 preprocExpression "\n" topLevelItem* (PreprocElse | PreprocElif)? token_6
+}
+
+PreprocIfdef {
+  (token_7 | token_8) Identifier topLevelItem* (PreprocElse | PreprocElif)? token_9
+}
+
+PreprocElse {
+  token_10 topLevelItem*
+}
+
+PreprocElif {
+  token_11 preprocExpression "\n" topLevelItem* (PreprocElse | PreprocElif)?
+}
+
+PreprocIfInFieldDeclarationList {
+  token_12 preprocExpression "\n" fieldDeclarationListItem* (PreprocElse { PreprocElseInFieldDeclarationList } | PreprocElif { PreprocElifInFieldDeclarationList })? token_13
+}
+
+PreprocIfdefInFieldDeclarationList {
+  (token_14 | token_15) Identifier fieldDeclarationListItem* (PreprocElse { PreprocElseInFieldDeclarationList } | PreprocElif { PreprocElifInFieldDeclarationList })? token_16
+}
+
+PreprocElseInFieldDeclarationList {
+  token_17 fieldDeclarationListItem*
+}
+
+PreprocElifInFieldDeclarationList {
+  token_18 preprocExpression "\n" fieldDeclarationListItem* (PreprocElse { PreprocElseInFieldDeclarationList } | PreprocElif { PreprocElifInFieldDeclarationList })?
+}
+
+preprocExpression {
+  Identifier |
+  CallExpression { PreprocCallExpression } |
+  NumberLiteral |
+  CharLiteral |
+  PreprocDefined |
+  UnaryExpression { PreprocUnaryExpression } |
+  BinaryExpression { PreprocBinaryExpression } |
+  ParenthesizedExpression { PreprocParenthesizedExpression }
+}
+
+PreprocParenthesizedExpression {
+  "(" preprocExpression ")"
+}
+
+PreprocDefined {
+  kw<"defined"> "(" Identifier ")" |  // !prec_14
+  kw<"defined"> Identifier
+}
+
+PreprocUnaryExpression {
+  ("!" | "~" | "-" | "+") preprocExpression
+}
+
+PreprocCallExpression {
+  Identifier !prec_14 ArgumentList { "(" commaSep<preprocExpression> ")" }
+}
+
+PreprocBinaryExpression {
+  preprocExpression !prec_10_l "+" preprocExpression |
+  preprocExpression !prec_10_l "-" preprocExpression |
+  preprocExpression !prec_11_l "*" preprocExpression |
+  preprocExpression !prec_11_l "/" preprocExpression |
+  preprocExpression !prec_11_l "%" preprocExpression |
+  preprocExpression !prec_1_l "||" preprocExpression |
+  preprocExpression !prec_2_l "&&" preprocExpression |
+  preprocExpression !prec_3_l "|" preprocExpression |
+  preprocExpression !prec_4_l "^" preprocExpression |
+  preprocExpression !prec_5_l "&" preprocExpression |
+  preprocExpression !prec_6_l "==" preprocExpression |
+  preprocExpression !prec_6_l "!=" preprocExpression |
+  preprocExpression !prec_7_l ">" preprocExpression |
+  preprocExpression !prec_7_l ">=" preprocExpression |
+  preprocExpression !prec_7_l "<=" preprocExpression |
+  preprocExpression !prec_7_l "<" preprocExpression |
+  preprocExpression !prec_9_l "<<" preprocExpression |
+  preprocExpression !prec_9_l ">>" preprocExpression
+}
+
+FunctionDefinition {
+  Attribute* MsCallModifier? declarationSpecifiers declarator CompoundStatement
+}
+
+Declaration {
+  Attribute* declarationSpecifiers commaSep1<declarator | InitDeclarator> ";"
+}
+
+TypeDefinition {
+  kw<"typedef"> TypeQualifier* typeSpecifier commaSep1<typeDeclarator> ";"
+}
+
+declarationSpecifiers {
+  ~c18 (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)* ~c18 typeSpecifier ~c18 (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)* ~c18
+}
+
+LinkageSpecification {
+  kw<"extern"> StringLiteral (FunctionDefinition | Declaration | DeclarationList)
+}
+
+AttributeSpecifier {
+  kw<"__attribute__"> "(" ArgumentList ")"
+}
+
+MsDeclspecModifier {
+  kw<"__declspec"> "(" Identifier ")"
+}
+
+MsBasedModifier {
+  kw<"__based"> ArgumentList
+}
+
+MsCallModifier {
+  kw<"__cdecl"> |
+  kw<"__clrcall"> |
+  kw<"__stdcall"> |
+  kw<"__fastcall"> |
+  kw<"__thiscall"> |
+  kw<"__vectorcall">
+}
+
+MsRestrictModifier {
+  kw<"__restrict">
+}
+
+MsUnsignedPtrModifier {
+  kw<"__uptr">
+}
+
+MsSignedPtrModifier {
+  kw<"__sptr">
+}
+
+MsUnalignedPtrModifier {
+  kw<"_unaligned"> |
+  kw<"__unaligned">
+}
+
+MsPointerModifier {
+  MsUnalignedPtrModifier |
+  MsRestrictModifier |
+  MsUnsignedPtrModifier |
+  MsSignedPtrModifier
+}
+
+DeclarationList {
+  "{" topLevelItem* "}"
+}
+
+declarator {
+  ~c0 ~c1 ~c13 ~c15 PointerDeclarator ~c0 ~c1 ~c13 ~c15 |
+  ~c0 ~c1 ~c13 ~c15 FunctionDeclarator ~c0 ~c1 ~c13 ~c15 |
+  ~c0 ~c1 ~c13 ~c15 ArrayDeclarator ~c0 ~c1 ~c13 ~c15 |
+  ~c0 ~c1 ~c13 ~c15 ParenthesizedDeclarator ~c0 ~c1 ~c13 ~c15 |
+  ~c0 ~c1 ~c13 ~c15 Identifier ~c0 ~c1 ~c13 ~c15 |
+  ~c0 ~c1 ~c13 ~c15 ReferenceDeclarator ~c0 ~c1 ~c13 ~c15 |
+  ~c0 ~c1 ~c13 ~c15 ScopedIdentifier ~c0 ~c1 ~c13 ~c15 |
+  ~c0 ~c1 ~c13 ~c15 TemplateFunction ~c0 ~c1 ~c13 ~c15 |
+  ~c0 ~c1 ~c13 ~c15 OperatorName ~c0 ~c1 ~c13 ~c15 |
+  ~c0 ~c1 ~c13 ~c15 DestructorName ~c0 ~c1 ~c13 ~c15 |
+  ~c0 ~c1 ~c13 ~c15 StructuredBindingDeclarator ~c0 ~c1 ~c13 ~c15
+}
+
+fieldDeclarator {
+  PointerDeclarator {
+    MsBasedModifier? "*" !prec_0_r MsPointerModifier* TypeQualifier* fieldDeclarator
+  } |
+  FunctionDeclarator {
+    fieldDeclarator !prec_1 ParameterList !prec_0_r (TypeQualifier | VirtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType)*
+  } |
+  ArrayDeclarator {
+    fieldDeclarator !prec_1 "[" TypeQualifier* (expression | "*")? "]"
+  } |
+  ParenthesizedDeclarator {
+    "(" fieldDeclarator ")"
+  } |
+  FieldIdentifier |
+  ReferenceDeclarator {
+    ("&" | "&&") !prec_0_r fieldDeclarator
+  } |
+  TemplateMethod |
+  OperatorName
+}
+
+typeDeclarator {
+  PointerDeclarator { PointerTypeDeclarator } |
+  FunctionDeclarator { FunctionTypeDeclarator } |
+  ArrayDeclarator { ArrayTypeDeclarator } |
+  ParenthesizedDeclarator { ParenthesizedTypeDeclarator } |
+  TypeIdentifier
+}
+
+abstractDeclarator {
+  AbstractPointerDeclarator |
+  AbstractFunctionDeclarator |
+  AbstractArrayDeclarator |
+  AbstractParenthesizedDeclarator |
+  AbstractReferenceDeclarator
+}
+
+ParenthesizedDeclarator {
+  "(" declarator ")"
+}
+
+ParenthesizedTypeDeclarator {
+  "(" typeDeclarator ")"
+}
+
+AbstractParenthesizedDeclarator {
+  !prec_1 "(" !prec_1 abstractDeclarator !prec_1 ")" !prec_1
+}
+
+PointerDeclarator {
+  !prec_0_r MsBasedModifier? !prec_0_r "*" !prec_0_r MsPointerModifier* !prec_0_r TypeQualifier* !prec_0_r declarator !prec_0_r
+}
+
+PointerTypeDeclarator {
+  !prec_0_r MsBasedModifier? !prec_0_r "*" !prec_0_r MsPointerModifier* !prec_0_r TypeQualifier* !prec_0_r typeDeclarator !prec_0_r
+}
+
+AbstractPointerDeclarator {
+  "*" (!prec_0_r TypeQualifier)* (!prec_0_r abstractDeclarator)?
+}
+
+FunctionDeclarator {
+  declarator !prec_1 ParameterList !prec_1 AttributeSpecifier*
+  (!prec_1 (TypeQualifier | VirtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType))*
+}
+
+FunctionTypeDeclarator {
+  !prec_1 typeDeclarator !prec_1 ParameterList !prec_1
+}
+
+AbstractFunctionDeclarator {
+  abstractDeclarator? !prec_1 ParameterList (TypeQualifier | Noexcept | ThrowSpecifier)* !prec_0_r TrailingReturnType?
+}
+
+ArrayDeclarator {
+  !prec_1 declarator !prec_1 "[" !prec_1 TypeQualifier* !prec_1 (expression | "*")? !prec_1 "]" !prec_1
+}
+
+ArrayTypeDeclarator {
+  !prec_1 typeDeclarator !prec_1 "[" !prec_1 TypeQualifier* !prec_1 (expression | "*")? !prec_1 "]" !prec_1
+}
+
+AbstractArrayDeclarator {
+  !prec_1 abstractDeclarator? !prec_1 "[" !prec_1 TypeQualifier* !prec_1 (expression | "*")? !prec_1 "]" !prec_1
+}
+
+InitDeclarator {
+  declarator "=" (InitializerList | expression) |
+  declarator (ArgumentList | InitializerList)
+}
+
+CompoundStatement {
+  !prec_m1 "{" topLevelItem* !prec_m1 "}"
+}
+
+StorageClassSpecifier {
+  kw<"extern"> |
+  kw<"static"> |
+  kw<"register"> |
+  kw<"inline">
+}
+
+TypeQualifier {
+  kw<"const"> |
+  kw<"volatile"> |
+  kw<"restrict"> |
+  kw<"_Atomic"> |
+  kw<"mutable"> |
+  kw<"constexpr">
+}
+
+typeSpecifier {
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 StructSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 UnionSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 EnumSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 ClassSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 SizedTypeSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 PrimitiveType ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 TemplateType ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 Auto ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 DependentType ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 Decltype ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 (!prec_0_r ScopedTypeIdentifier !prec_0_r | !prec_0_r TypeIdentifier !prec_0_r)  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17
+}
+
+SizedTypeSpecifier {
+  ~c5 (kw<"signed"> | kw<"unsigned"> | kw<"long"> | kw<"short">)+ ~c5 (TypeIdentifier | PrimitiveType)? ~c5
+}
+
+EnumSpecifier {
+  !prec_0_l kw<"enum"> !prec_0_l (kw<"class"> | kw<"struct">)? !prec_0_l (className enumBaseClause? EnumeratorList? | EnumeratorList) !prec_0_l
+}
+
+EnumeratorList {
+  "{" commaSepTrailing<Enumerator> "}"
+}
+
+StructSpecifier {
+  !prec_0_r kw<"struct"> !prec_0_r MsDeclspecModifier? !prec_0_r (className | className? VirtualSpecifier? BaseClassClause? FieldDeclarationList) !prec_0_r
+}
+
+UnionSpecifier {
+  !prec_0_r kw<"union"> !prec_0_r MsDeclspecModifier? !prec_0_r (className | className? VirtualSpecifier? BaseClassClause? FieldDeclarationList) !prec_0_r
+}
+
+FieldDeclarationList {
+  "{" fieldDeclarationListItem* "}"
+}
+
+fieldDeclarationListItem {
+  FieldDeclaration |
+  PreprocDef |
+  PreprocFunctionDef |
+  PreprocCall |
+  PreprocIf { PreprocIfInFieldDeclarationList } |
+  PreprocIfdef { PreprocIfdefInFieldDeclarationList } |
+  TemplateDeclaration |
+  FunctionDefinition { InlineMethodDefinition } |
+  FunctionDefinition { ConstructorOrDestructorDefinition } |
+  Declaration { ConstructorOrDestructorDeclaration } |
+  FunctionDefinition { OperatorCastDefinition } |
+  Declaration { OperatorCastDeclaration } |
+  FriendDeclaration |
+  AccessSpecifier |
+  AliasDeclaration |
+  UsingDeclaration |
+  TypeDefinition |
+  StaticAssertDeclaration
+}
+
+FieldDeclaration {
+  Attribute* VirtualFunctionSpecifier? declarationSpecifiers commaSep<fieldDeclarator> (BitfieldClause | InitializerList | "=" (expression | InitializerList))? ";"
+}
+
+BitfieldClause {
+  ":" expression
+}
+
+Enumerator {
+  Identifier ("=" expression)?
+}
+
+ParameterList {
+  "(" ~c16 commaSep<(ParameterDeclaration | OptionalParameterDeclaration | VariadicParameterDeclaration | "...") ~c16> ")"
+}
+
+ParameterDeclaration {
+  Attribute* declarationSpecifiers (declarator | abstractDeclarator)?
+}
+
+statement {
+  CaseStatement |
+  nonCaseStatement |
+  ForRangeLoop |
+  TryStatement |
+  ThrowStatement
+}
+
+nonCaseStatement {
+  LabeledStatement |
+  CompoundStatement |
+  ExpressionStatement |
+  IfStatement |
+  SwitchStatement |
+  DoStatement |
+  WhileStatement |
+  ForStatement |
+  ReturnStatement |
+  BreakStatement |
+  ContinueStatement |
+  GotoStatement
+}
+
+LabeledStatement {
+  StatementIdentifier ":" statement
+}
+
+ExpressionStatement {
+  (expression | CommaExpression)? ";"
+}
+
+IfStatement {
+  kw<"if"> kw<"constexpr">? ConditionClause statement (!prec_0_r kw<"else"> statement)?
+}
+
+SwitchStatement {
+  kw<"switch"> ConditionClause CompoundStatement
+}
+
+CaseStatement {
+  (kw<"case"> expression | kw<"default">) ":" (!prec_0_r (nonCaseStatement | Declaration | TypeDefinition))*
+}
+
+WhileStatement {
+  kw<"while"> ConditionClause statement
+}
+
+DoStatement {
+  kw<"do"> statement kw<"while"> ParenthesizedExpression ";"
+}
+
+ForStatement {
+  kw<"for"> "(" (Declaration | (expression | CommaExpression)? ";") expression? ";" (expression | CommaExpression)? ")" statement
+}
+
+ReturnStatement {
+  kw<"return"> (expression | CommaExpression)? ";" |
+  kw<"return"> InitializerList ";"
+}
+
+BreakStatement {
+  kw<"break"> ";"
+}
+
+ContinueStatement {
+  kw<"continue"> ";"
+}
+
+GotoStatement {
+  kw<"goto"> StatementIdentifier ";"
+}
+
+expression {
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 ConditionalExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 AssignmentExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 BinaryExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 UnaryExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 UpdateExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 CastExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 PointerExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 SizeofExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 SubscriptExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 CallExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 FieldExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 CompoundLiteralExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 Identifier ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 NumberLiteral ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 StringLiteral ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 True ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 False ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 kw<"NULL"> ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 ConcatenatedString ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 CharLiteral ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 ParenthesizedExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 TemplateFunction ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 ScopedIdentifier ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 NewExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 DeleteExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 LambdaExpression ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 ParameterPackExpansion ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 Nullptr ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 This ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 |
+  ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15 RawStringLiteral ~c2 ~c3 ~c7 ~c8 ~c13 ~c14 ~c15
+}
+
+CommaExpression {
+  expression !prec_1 "," (expression | CommaExpression)
+}
+
+ConditionalExpression {
+  expression !prec_m2_r "?" expression ":" expression
+}
+
+assignmentLeftExpression {
+  (Identifier |
+  CallExpression |
+  FieldExpression |
+  PointerExpression |
+  SubscriptExpression |
+  ParenthesizedExpression |
+  ScopedNamespaceIdentifier) !prec_m1_r
+}
+
+AssignmentExpression {
+  !prec_m1_r assignmentLeftExpression !prec_m1_r ("=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=") !prec_m1_r expression !prec_m1_r
+}
+
+PointerExpression {
+  !prec_12_l ("*" | "&") !prec_12_l expression !prec_12_l
+}
+
+UnaryExpression {
+  !prec_13_l ("!" | "~" | "-" | "+") !prec_13_l expression !prec_13_l
+}
+
+BinaryExpression {
+  !prec_10_l expression !prec_10_l "+" !prec_10_l expression !prec_10_l |
+  !prec_10_l expression !prec_10_l "-" !prec_10_l expression !prec_10_l |
+  !prec_11_l expression !prec_11_l "*" !prec_11_l expression !prec_11_l |
+  !prec_11_l expression !prec_11_l "/" !prec_11_l expression !prec_11_l |
+  !prec_11_l expression !prec_11_l "%" !prec_11_l expression !prec_11_l |
+  !prec_1_l expression !prec_1_l "||" !prec_1_l expression !prec_1_l |
+  !prec_2_l expression !prec_2_l "&&" !prec_2_l expression !prec_2_l |
+  !prec_3_l expression !prec_3_l "|" !prec_3_l expression !prec_3_l |
+  !prec_4_l expression !prec_4_l "^" !prec_4_l expression !prec_4_l |
+  !prec_5_l expression !prec_5_l "&" !prec_5_l expression !prec_5_l |
+  !prec_6_l expression !prec_6_l "==" !prec_6_l expression !prec_6_l |
+  !prec_6_l expression !prec_6_l "!=" !prec_6_l expression !prec_6_l |
+  !prec_7_l expression !prec_7_l ">" !prec_7_l expression !prec_7_l |
+  !prec_7_l expression !prec_7_l ">=" !prec_7_l expression !prec_7_l |
+  !prec_7_l expression !prec_7_l "<=" !prec_7_l expression !prec_7_l |
+  !prec_7_l expression !prec_7_l "<" !prec_7_l expression !prec_7_l |
+  !prec_9_l expression !prec_9_l "<<" !prec_9_l expression !prec_9_l |
+  !prec_9_l expression !prec_9_l ">>" !prec_9_l expression !prec_9_l
+}
+
+UpdateExpression {
+  ("--" | "++") expression | expression !prec_13_r ("--" | "++")
+}
+
+CastExpression {
+  !prec_12 "(" !prec_12 TypeDescriptor !prec_12 ")" !prec_12 expression !prec_12
+}
+
+TypeDescriptor {
+  TypeQualifier* typeSpecifier TypeQualifier* abstractDeclarator?
+}
+
+SizeofExpression {
+  !prec_8 kw<"sizeof"> !prec_8 (expression | "(" TypeDescriptor ")") !prec_8 |
+  kw<"sizeof"> "..." "(" Identifier ")"
+}
+
+SubscriptExpression {
+  !prec_16 expression !prec_16 "[" !prec_16 expression !prec_16 "]" !prec_16
+}
+
+CallExpression {
+  ~c17 !prec_14 expression !prec_14 ArgumentList !prec_14 ~c17 |
+  ~c17 PrimitiveType ~c17 ArgumentList ~c17
+}
+
+ArgumentList {
+  "(" ~c16 commaSep<(expression | InitializerList) ~c16> ")"
+}
+
+FieldExpression {
+  ~c9 expression !prec_15 ("." | "->") ~c9 FieldIdentifier ~c9 |
+  ~c9 expression !prec_15 ("." | "->") ~c9 (DestructorName | TemplateMethod) ~c9
+}
+
+CompoundLiteralExpression {
+  "(" TypeDescriptor ")" InitializerList |
+  (TypeIdentifier | TemplateType | ScopedTypeIdentifier) InitializerList
+}
+
+ParenthesizedExpression {
+  "(" (expression | CommaExpression) ")"
+}
+
+InitializerList {
+  "{" commaSepTrailing<InitializerPair | expression | InitializerList> "}"
+}
+
+InitializerPair {
+  (SubscriptDesignator | FieldDesignator)+ "=" (expression | InitializerList)
+}
+
+SubscriptDesignator {
+  "[" expression !subscriptDesignator "]"
+}
+
+FieldDesignator {
+  "." FieldIdentifier
+}
+
+@skip {} {
+  CharLiteral {
+    charLiteralStart (EscapeSequence | charLiteralContent) charLiteralEnd
+  }
+
+  StringLiteral {
+    stringLiteralStart (stringLiteralContent | EscapeSequence)* stringLiteralEnd
+  }
+}
+
+ConcatenatedString {
+  (RawStringLiteral | StringLiteral) (RawStringLiteral | StringLiteral)+
+}
+
+TypeIdentifier {
+  !prec_0_r Identifier !prec_0_r
+}
+
+FieldIdentifier {
+  Identifier
+}
+
+StatementIdentifier {
+  Identifier
+}
+
+emptyDeclaration {
+  typeSpecifier ";"
+}
+
+Decltype {
+  kw<"decltype"> "(" expression ")"
+}
+
+ClassSpecifier {
+  !prec_0_r kw<"class"> !prec_0_r MsDeclspecModifier? !prec_0_r (className | className? VirtualSpecifier? BaseClassClause? FieldDeclarationList) !prec_0_r
+}
+
+className {
+  !prec_0_r (TypeIdentifier | ScopedTypeIdentifier | TemplateType) !prec_0_r
+}
+
+VirtualSpecifier {
+  kw<"final"> |
+  kw<"override">
+}
+
+VirtualFunctionSpecifier {
+  kw<"virtual">
+}
+
+ExplicitFunctionSpecifier {
+  kw<"explicit"> |
+  !prec_14 kw<"explicit"> !prec_14 "(" !prec_14 expression !prec_14 ")" !prec_14
+}
+
+BaseClassClause {
+  ":" commaSep1<(kw<"public"> | kw<"private"> | kw<"protected">)? className "..."?>
+}
+
+enumBaseClause {
+  !prec_0_l ":" !prec_0_l (ScopedTypeIdentifier | TypeIdentifier | SizedTypeSpecifier) !prec_0_l
+}
+
+Auto {
+  kw<"auto">
+}
+
+DependentType {
+  kw<"typename"> typeSpecifier
+}
+
+TemplateDeclaration {
+  kw<"template"> TemplateParameterList (emptyDeclaration | AliasDeclaration | Declaration | TemplateDeclaration | FunctionDefinition | FunctionDefinition { ConstructorOrDestructorDefinition } | FunctionDefinition { OperatorCastDefinition })
+}
+
+TemplateInstantiation {
+  kw<"template"> declarationSpecifiers? declarator ";"
+}
+
+TemplateParameterList {
+  "<" commaSep<
+    ParameterDeclaration |
+    OptionalParameterDeclaration |
+    TypeParameterDeclaration |
+    VariadicParameterDeclaration |
+    VariadicTypeParameterDeclaration |
+    OptionalTypeParameterDeclaration |
+    TemplateTemplateParameterDeclaration
+  > ">"
+}
+
+TypeParameterDeclaration {
+  !prec_1 (kw<"typename"> | kw<"class">) !prec_1 TypeIdentifier? !prec_1
+}
+
+VariadicTypeParameterDeclaration {
+  !prec_1 (kw<"typename"> | kw<"class">) !prec_1 "..." !prec_1 TypeIdentifier? !prec_1
+}
+
+OptionalTypeParameterDeclaration {
+  (kw<"typename"> | kw<"class">) TypeIdentifier? "=" typeSpecifier
+}
+
+TemplateTemplateParameterDeclaration {
+  kw<"template"> TemplateParameterList (TypeParameterDeclaration | VariadicTypeParameterDeclaration | OptionalTypeParameterDeclaration)
+}
+
+OptionalParameterDeclaration {
+  declarationSpecifiers declarator? "=" expression
+}
+
+VariadicParameterDeclaration {
+  declarationSpecifiers (VariadicDeclarator | ReferenceDeclarator { VariadicReferenceDeclarator })
+}
+
+VariadicDeclarator {
+  "..." Identifier?
+}
+
+VariadicReferenceDeclarator {
+  ("&&" | "&") VariadicDeclarator
+}
+
+OperatorCast {
+  !prec_1 ((NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? "::")? !prec_1 kw<"operator"> !prec_1 declarationSpecifiers !prec_1 abstractDeclarator !prec_1
+}
+
+FieldInitializerList {
+  ":" commaSep1<FieldInitializer>
+}
+
+FieldInitializer {
+  !prec_1 (FieldIdentifier | ScopedFieldIdentifier) !prec_1 (InitializerList | ArgumentList) !prec_1 "..."? !prec_1
+}
+
+InlineMethodDefinition {
+  Attribute* VirtualFunctionSpecifier? declarationSpecifiers
+  fieldDeclarator (CompoundStatement | !prec_1 DefaultMethodClause | DeleteMethodClause)
+}
+
+OperatorCastDefinition {
+  ~c18 (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~c18 (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? OperatorCast ~c18 (CompoundStatement | DefaultMethodClause | DeleteMethodClause) ~c18
+}
+
+OperatorCastDeclaration {
+  (VirtualFunctionSpecifier | ExplicitFunctionSpecifier)? OperatorCast ("=" expression)? ";"
+}
+
+ConstructorOrDestructorDefinition {
+  ~c18 (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~c18 (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? FunctionDeclarator FieldInitializerList? ~c18 (CompoundStatement | DefaultMethodClause | DeleteMethodClause) ~c18
+}
+
+ConstructorOrDestructorDeclaration {
+  (VirtualFunctionSpecifier | ExplicitFunctionSpecifier)? FunctionDeclarator ";"
+}
+
+DefaultMethodClause {
+  "=" kw<"default"> ";"
+}
+
+DeleteMethodClause {
+  "=" kw<"delete"> ";"
+}
+
+FriendDeclaration {
+  kw<"friend"> (Declaration | FunctionDefinition | (kw<"class"> | kw<"struct"> | kw<"union">)? className ";")
+}
+
+AccessSpecifier {
+  (kw<"public"> | kw<"private"> | kw<"protected">) ":"
+}
+
+ReferenceDeclarator {
+  !prec_0_r ("&" | "&&") !prec_0_r declarator !prec_0_r
+}
+
+AbstractReferenceDeclarator {
+  !prec_0_r ("&" | "&&") !prec_0_r abstractDeclarator? !prec_0_r
+}
+
+StructuredBindingDeclarator {
+  "[" commaSep1<Identifier ~c14> "]"
+}
+
+TrailingReturnType {
+  "->" TypeQualifier? typeSpecifier abstractDeclarator?
+}
+
+Noexcept {
+  kw<"noexcept"> (!prec_0_r "(" expression? ")")?
+}
+
+ThrowSpecifier {
+  kw<"throw"> "(" commaSep<TypeDescriptor> ")"
+}
+
+TemplateType {
+  ~c6 ~c7 ~c9 (TypeIdentifier | ScopedTypeIdentifier) ~c6 ~c7 ~c9 TemplateArgumentList ~c6 ~c7 ~c9
+}
+
+TemplateMethod {
+  ~c9 (FieldIdentifier | ScopedFieldIdentifier) ~c9 TemplateArgumentList ~c9
+}
+
+TemplateFunction {
+  ~c6 ~c7 ~c8 (Identifier | ScopedIdentifier) ~c6 ~c7 ~c8 TemplateArgumentList ~c6 ~c7 ~c8
+}
+
+TemplateArgumentList {
+  "<" commaSep<TypeDescriptor | ParameterPackExpansion { TypeDescriptor "..." } | expression> ">"
+}
+
+NamespaceDefinition {
+  kw<"namespace"> Identifier? DeclarationList
+}
+
+UsingDeclaration {
+  kw<"using"> kw<"namespace">? (Identifier | ScopedIdentifier) ";"
+}
+
+AliasDeclaration {
+  kw<"using"> TypeIdentifier "=" TypeDescriptor ";"
+}
+
+StaticAssertDeclaration {
+  kw<"static_assert"> "(" expression ("," (StringLiteral | RawStringLiteral | ConcatenatedString))? ")" ";"
+}
+
+ConditionClause {
+  "(" ((Declaration | ExpressionStatement)? (expression | CommaExpression) | Declaration { ConditionDeclaration }) ")"
+}
+
+ConditionDeclaration {
+  declarationSpecifiers declarator ("=" expression | InitializerList)
+}
+
+ForRangeLoop {
+  kw<"for"> "(" declarationSpecifiers declarator ":" (expression | InitializerList) ")" statement
+}
+
+ThrowStatement {
+  kw<"throw"> expression? ";"
+}
+
+TryStatement {
+  kw<"try"> CompoundStatement CatchClause+
+}
+
+CatchClause {
+  kw<"catch"> ParameterList CompoundStatement
+}
+
+Attribute {
+  "[[" commaSep1<expression> "]]"
+}
+
+NewExpression {
+  "::"? kw<"new"> ArgumentList? typeSpecifier (!prec_15_r NewDeclarator) (!prec_15_r ArgumentList | !prec_15_r InitializerList)?
+}
+
+NewDeclarator {
+  "[" expression "]" (!prec_0_r NewDeclarator)?
+}
+
+DeleteExpression {
+  "::"? kw<"delete"> (!prec_1 "[" "]")? expression
+}
+
+LambdaExpression {
+  LambdaCaptureSpecifier AbstractFunctionDeclarator? CompoundStatement
+}
+
+LambdaCaptureSpecifier {
+  "[" (
+    LambdaDefaultCapture |
+    commaSep1<expression> |
+    LambdaDefaultCapture "," commaSep1<expression> |
+    ""
+  ) "]" !prec_18
+}
+
+ParameterPackExpansion {
+  !prec_m1 expression !prec_m1 "..." !prec_m1
+}
+
+DestructorName {
+  !prec_1 "~" !prec_1 Identifier !prec_1
+}
+
+ScopedFieldIdentifier {
+  ~c11 !prec_1 (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" !prec_1 (FieldIdentifier | OperatorName | DestructorName) !prec_1 ~c11
+}
+
+ScopedIdentifier {
+  ~c10 !prec_1 (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" !prec_1 (Identifier | OperatorName | DestructorName) !prec_1 ~c10
+}
+
+ScopedTypeIdentifier {
+  ~c10 ~c11 !prec_1 (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_1 "::" !prec_1 TypeIdentifier !prec_1 ~c10 ~c11
+}
+
+ScopedNamespaceIdentifier {
+  !prec_2 (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !prec_2 "::" !prec_2 NamespaceIdentifier !prec_2
+}
+
+This {
+  kw<"this">
+}
+
+Nullptr {
+  kw<"nullptr">
+}
+
+NamespaceIdentifier {
+  Identifier
+}
+
+kw<term> { @specialize[name={term}]<Identifier, term> }
+
+commaSep<term> { "" | term ("," term)* }
+
+commaSep1<term> { term ("," term)* }
+
+commaSepTrailing<term> { "" | term ("," term?)* }
+
+@skip { whitespace | Comment }
+
+@external tokens token from "./tokens" { RawStringLiteral }
+
+@tokens {
+  whitespace {
+    ($[ \t\r\n] | "\\" "\r"? "\n")+
+  }
+  token_2 {
+    "#" $[ 	]* "include"
+  }
+  token_3 {
+    "#" $[ 	]* "define"
+  }
+  token_4 {
+    "#" $[ 	]* "define"
+  }
+  token_5 {
+    "#" $[ 	]* "if"
+  }
+  token_6 {
+    "#" $[ 	]* "endif"
+  }
+  token_7 {
+    "#" $[ 	]* "ifdef"
+  }
+  token_8 {
+    "#" $[ 	]* "ifndef"
+  }
+  token_9 {
+    "#" $[ 	]* "endif"
+  }
+  token_10 {
+    "#" $[ 	]* "else"
+  }
+  token_11 {
+    "#" $[ 	]* "elif"
+  }
+  token_12 {
+    "#" $[ 	]* "if"
+  }
+  token_13 {
+    "#" $[ 	]* "endif"
+  }
+  token_14 {
+    "#" $[ 	]* "ifdef"
+  }
+  token_15 {
+    "#" $[ 	]* "ifndef"
+  }
+  token_16 {
+    "#" $[ 	]* "endif"
+  }
+  token_17 {
+    "#" $[ 	]* "else"
+  }
+  token_18 {
+    "#" $[ 	]* "elif"
+  }
+  PreprocDirective {
+    "#" $[ \t]* $[a-zA-Z] $[a-zA-Z0-9_]*
+  }
+  PreprocArg {
+    ![\n] | "\\\\" "\\r"? "\\n"+
+  }
+  PrimitiveType {
+    "bool" | "char" | "int" | "float" | "double" | "void" | "size_t" | "ssize_t" | "intptr_t" | "uintptr_t" | "charptr_t" | "int8_t" | "int16_t" | "int32_t" | "int64_t" | "uint8_t" | "uint16_t" | "uint32_t" | "uint64_t" | "char8_t" | "char16_t" | "char32_t" | "char64_t"
+  }
+  NumberLiteral {
+    $[-\+]? ("0x" | "0b")? (($[0-9]+ ("'" $[0-9]+)* | "0b" $[0-9]+ ("'" $[0-9]+)* | "0x" $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*) ("." ($[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? | "." $[0-9]+ ("'" $[0-9]+)*) ($[eEpP] ($[-\+]? $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? ("u" | "l" | "U" | "L" | "f" | "F")*
+  }
+  EscapeSequence {
+    "\\" (
+      ![xuU] |
+      $[0-9] $[0-9] $[0-9]? |
+      "x" $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F]* |
+      "u" $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F]  |
+      "U" $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F]
+    )
+  }
+  SystemLibString {
+    "<" (![>\n] | "\\>")* ">"
+  }
+  True {
+    "TRUE" | "true"
+  }
+  False {
+    "FALSE" | "false"
+  }
+  Identifier {
+    $[a-zA-Z_] $[a-zA-Z0-9_]*
+  }
+  Comment {
+    "//" ("\\\\" (![\n] | "\\r"? "\\n") | ![\\\n])* | "/*" ![*]* "\\*"+ (![\/*] ![*]* "\\*"+)* "/"
+  }
+  LambdaDefaultCapture {
+    "=" | "&"
+  }
+  OperatorName {
+    "operator" ("+" | "-" | "*" | "/" | "%" | "^" | "&" | "|" | "~" | "!" | "=" | "<" | ">" | "+=" | "-=" | "*=" | "/=" | "%=" | "^=" | "&=" | "|=" | "<<" | ">>" | ">>=" | "<<=" | "==" | "!=" | "<=" | ">=" | "&&" | "||" | "++" | "--" | "," | "->*" | "->" | "()" | "[]")
+  }
+
+  charLiteralStart { "L'" | "u'" | "U'" | "u8'" | "'" }
+
+  charLiteralEnd { "'" }
+
+  charLiteralContent { ![\n']+ }
+
+  stringLiteralStart { "L\"" | "u\"" | "U\"" | "u8\"" | "\"" }
+
+  stringLiteralEnd { "\"" }
+
+  stringLiteralContent { ![\\"\n]+ }
+}
