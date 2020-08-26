@@ -3,6 +3,7 @@
   prec_16
   prec_15
   prec_15_r @right
+  arguments
   prec_14
   prec_13_l @left
   prec_13_r @right
@@ -125,37 +126,28 @@ PreprocParenthesizedExpression {
 }
 
 PreprocDefined {
-  kw<"defined"> "(" Identifier ")" |  // !prec_14
+  kw<"defined"> "(" Identifier ")" |
   kw<"defined"> Identifier
 }
 
 PreprocUnaryExpression {
-  ("!" | "~" | "-" | "+") preprocExpression
+  UnaryOp preprocExpression
 }
 
 PreprocCallExpression {
-  Identifier !prec_14 ArgumentList { "(" commaSep<preprocExpression> ")" }
+  Identifier !arguments ArgumentList { "(" commaSep<preprocExpression> ")" }
 }
 
 PreprocBinaryExpression {
-  preprocExpression !prec_10_l "+" preprocExpression |
-  preprocExpression !prec_10_l "-" preprocExpression |
-  preprocExpression !prec_11_l "*" preprocExpression |
-  preprocExpression !prec_11_l "/" preprocExpression |
-  preprocExpression !prec_11_l "%" preprocExpression |
-  preprocExpression !prec_1_l "||" preprocExpression |
-  preprocExpression !prec_2_l "&&" preprocExpression |
-  preprocExpression !prec_3_l "|" preprocExpression |
-  preprocExpression !prec_4_l "^" preprocExpression |
-  preprocExpression !prec_5_l "&" preprocExpression |
-  preprocExpression !prec_6_l "==" preprocExpression |
-  preprocExpression !prec_6_l "!=" preprocExpression |
-  preprocExpression !prec_7_l ">" preprocExpression |
-  preprocExpression !prec_7_l ">=" preprocExpression |
-  preprocExpression !prec_7_l "<=" preprocExpression |
-  preprocExpression !prec_7_l "<" preprocExpression |
-  preprocExpression !prec_9_l "<<" preprocExpression |
-  preprocExpression !prec_9_l ">>" preprocExpression
+  preprocExpression !prec_10_l ArithOp<"+" | "-"> preprocExpression |
+  preprocExpression !prec_11_l ArithOp<"*" | "/" | "%"> preprocExpression |
+  preprocExpression !prec_1_l LogicOp<"||" | "&&"> preprocExpression |
+  preprocExpression !prec_3_l BitOp<"|"> preprocExpression |
+  preprocExpression !prec_4_l BitOp<"^"> preprocExpression |
+  preprocExpression !prec_5_l BitOp<"&"> preprocExpression |
+  preprocExpression !prec_6_l CompareOp<"==" | "!="> preprocExpression |
+  preprocExpression !prec_7_l CompareOp<("<" | ">") "="?> preprocExpression |
+  preprocExpression !prec_9_l BitOp<"<<" | ">>"> preprocExpression
 }
 
 FunctionDefinition {
@@ -171,7 +163,7 @@ TypeDefinition {
 }
 
 declarationSpecifiers {
-  ~c18 (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)* ~c18 typeSpecifier ~c18 (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)* ~c18
+  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)* ~c18 typeSpecifier (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)*
 }
 
 LinkageSpecification {
@@ -329,7 +321,7 @@ AbstractArrayDeclarator {
 
 InitDeclarator {
   declarator "=" (InitializerList | expression) |
-  declarator (ArgumentList | InitializerList)
+  declarator (!arguments ArgumentList | InitializerList)
 }
 
 CompoundStatement {
@@ -358,7 +350,7 @@ typeSpecifier {
   ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 EnumSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
   ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 ClassSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
   ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 SizedTypeSpecifier ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
-  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 PrimitiveType ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
+  ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 primitiveType ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
   ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 TemplateType ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
   ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 Auto ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
   ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 DependentType ~c0 ~c1 ~c2 ~c3 ~c4 ~c15 ~c17 |
@@ -367,7 +359,7 @@ typeSpecifier {
 }
 
 SizedTypeSpecifier {
-  ~c5 (kw<"signed"> | kw<"unsigned"> | kw<"long"> | kw<"short">)+ ~c5 (TypeIdentifier | PrimitiveType)? ~c5
+  ~c5 (kw<"signed"> | kw<"unsigned"> | kw<"long"> | kw<"short">)+ ~c5 (TypeIdentifier | primitiveType)? ~c5
 }
 
 EnumSpecifier {
@@ -563,28 +555,19 @@ PointerExpression {
 }
 
 UnaryExpression {
-  !prec_13_l ("!" | "~" | "-" | "+") !prec_13_l expression !prec_13_l
+  !prec_13_l UnaryOp !prec_13_l expression !prec_13_l
 }
 
 BinaryExpression {
-  !prec_10_l expression !prec_10_l "+" !prec_10_l expression !prec_10_l |
-  !prec_10_l expression !prec_10_l "-" !prec_10_l expression !prec_10_l |
-  !prec_11_l expression !prec_11_l "*" !prec_11_l expression !prec_11_l |
-  !prec_11_l expression !prec_11_l "/" !prec_11_l expression !prec_11_l |
-  !prec_11_l expression !prec_11_l "%" !prec_11_l expression !prec_11_l |
-  !prec_1_l expression !prec_1_l "||" !prec_1_l expression !prec_1_l |
-  !prec_2_l expression !prec_2_l "&&" !prec_2_l expression !prec_2_l |
-  !prec_3_l expression !prec_3_l "|" !prec_3_l expression !prec_3_l |
-  !prec_4_l expression !prec_4_l "^" !prec_4_l expression !prec_4_l |
-  !prec_5_l expression !prec_5_l "&" !prec_5_l expression !prec_5_l |
-  !prec_6_l expression !prec_6_l "==" !prec_6_l expression !prec_6_l |
-  !prec_6_l expression !prec_6_l "!=" !prec_6_l expression !prec_6_l |
-  !prec_7_l expression !prec_7_l ">" !prec_7_l expression !prec_7_l |
-  !prec_7_l expression !prec_7_l ">=" !prec_7_l expression !prec_7_l |
-  !prec_7_l expression !prec_7_l "<=" !prec_7_l expression !prec_7_l |
-  !prec_7_l expression !prec_7_l "<" !prec_7_l expression !prec_7_l |
-  !prec_9_l expression !prec_9_l "<<" !prec_9_l expression !prec_9_l |
-  !prec_9_l expression !prec_9_l ">>" !prec_9_l expression !prec_9_l
+  expression !prec_10_l ArithOp<"+" | "-"> expression |
+  expression !prec_11_l ArithOp<"*" | "/" | "%"> expression |
+  expression !prec_1_l LogicOp<"||" | "&&"> expression |
+  expression !prec_3_l BitOp<"|"> expression |
+  expression !prec_4_l BitOp<"^"> expression |
+  expression !prec_5_l BitOp<"&"> expression |
+  expression !prec_6_l CompareOp<"==" | "!="> expression |
+  expression !prec_7_l CompareOp<("<" | ">") "="?> expression |
+  expression !prec_9_l BitOp<"<<" | ">>"> expression
 }
 
 UpdateExpression {
@@ -609,8 +592,8 @@ SubscriptExpression {
 }
 
 CallExpression {
-  ~c17 !prec_14 expression !prec_14 ArgumentList !prec_14 ~c17 |
-  ~c17 PrimitiveType ~c17 ArgumentList ~c17
+  expression ~c17 !arguments ArgumentList |
+  primitiveType !arguments ArgumentList
 }
 
 ArgumentList {
@@ -662,15 +645,19 @@ ConcatenatedString {
 }
 
 TypeIdentifier {
-  !prec_0_r Identifier !prec_0_r
+  !prec_0_r identifier !prec_0_r
 }
 
 FieldIdentifier {
-  Identifier
+  identifier
 }
 
 StatementIdentifier {
-  Identifier
+  identifier
+}
+
+Identifier {
+  identifier
 }
 
 emptyDeclaration {
@@ -700,7 +687,7 @@ VirtualFunctionSpecifier {
 
 ExplicitFunctionSpecifier {
   kw<"explicit"> |
-  !prec_14 kw<"explicit"> !prec_14 "(" !prec_14 expression !prec_14 ")" !prec_14
+  kw<"explicit"> !prec_14 "(" expression ")"
 }
 
 BaseClassClause {
@@ -780,7 +767,7 @@ FieldInitializerList {
 }
 
 FieldInitializer {
-  !prec_1 (FieldIdentifier | ScopedFieldIdentifier) !prec_1 (InitializerList | ArgumentList) !prec_1 "..."? !prec_1
+  !prec_1 (FieldIdentifier | ScopedFieldIdentifier) !arguments (InitializerList | ArgumentList) !prec_1 "..."? !prec_1
 }
 
 InlineMethodDefinition {
@@ -789,7 +776,7 @@ InlineMethodDefinition {
 }
 
 OperatorCastDefinition {
-  ~c18 (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~c18 (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? OperatorCast ~c18 (CompoundStatement | DefaultMethodClause | DeleteMethodClause) ~c18
+  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~c18 (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? OperatorCast (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
 OperatorCastDeclaration {
@@ -797,7 +784,7 @@ OperatorCastDeclaration {
 }
 
 ConstructorOrDestructorDefinition {
-  ~c18 (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~c18 (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? FunctionDeclarator FieldInitializerList? ~c18 (CompoundStatement | DefaultMethodClause | DeleteMethodClause) ~c18
+  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~c18 (!prec_1 (VirtualFunctionSpecifier | ExplicitFunctionSpecifier))? FunctionDeclarator FieldInitializerList? (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
 ConstructorOrDestructorDeclaration {
@@ -905,7 +892,7 @@ Attribute {
 }
 
 NewExpression {
-  "::"? kw<"new"> ArgumentList? typeSpecifier (!prec_15_r NewDeclarator) (!prec_15_r ArgumentList | !prec_15_r InitializerList)?
+  "::"? kw<"new"> ArgumentList? typeSpecifier NewDeclarator (!arguments (ArgumentList | InitializerList))?
 }
 
 NewDeclarator {
@@ -965,7 +952,19 @@ NamespaceIdentifier {
   Identifier
 }
 
-kw<term> { @specialize[name={term}]<Identifier, term> }
+True { @specialize<identifier, "TRUE" | "true"> }
+
+False { @specialize<identifier, "FALSE" | "false"> }
+
+primitiveType {
+  @specialize[name=PrimitiveType]<identifier,
+    "bool" | "char" | "int" | "float" | "double" | "void" | "size_t" | "ssize_t" |
+    "intptr_t" | "uintptr_t" | "charptr_t" | "int8_t" | "int16_t" | "int32_t" |
+    "int64_t" | "uint8_t" | "uint16_t" | "uint32_t" | "uint64_t" | "char8_t" |
+    "char16_t" | "char32_t" | "char64_t">
+}
+
+kw<term> { @specialize[name={term}]<identifier, term> }
 
 commaSep<term> { "" | term ("," term)* }
 
@@ -1038,9 +1037,6 @@ commaSepTrailing<term> { "" | term ("," term?)* }
   PreprocArg {
     ![\n] | "\\\\" "\\r"? "\\n"+
   }
-  PrimitiveType {
-    "bool" | "char" | "int" | "float" | "double" | "void" | "size_t" | "ssize_t" | "intptr_t" | "uintptr_t" | "charptr_t" | "int8_t" | "int16_t" | "int32_t" | "int64_t" | "uint8_t" | "uint16_t" | "uint32_t" | "uint64_t" | "char8_t" | "char16_t" | "char32_t" | "char64_t"
-  }
   NumberLiteral {
     $[-\+]? ("0x" | "0b")? (($[0-9]+ ("'" $[0-9]+)* | "0b" $[0-9]+ ("'" $[0-9]+)* | "0x" $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*) ("." ($[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? | "." $[0-9]+ ("'" $[0-9]+)*) ($[eEpP] ($[-\+]? $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? ("u" | "l" | "U" | "L" | "f" | "F")*
   }
@@ -1056,13 +1052,7 @@ commaSepTrailing<term> { "" | term ("," term?)* }
   SystemLibString {
     "<" (![>\n] | "\\>")* ">"
   }
-  True {
-    "TRUE" | "true"
-  }
-  False {
-    "FALSE" | "false"
-  }
-  Identifier {
+  identifier {
     $[a-zA-Z_] $[a-zA-Z0-9_]*
   }
   Comment {
@@ -1072,8 +1062,21 @@ commaSepTrailing<term> { "" | term ("," term?)* }
     "=" | "&"
   }
   OperatorName {
-    "operator" ("+" | "-" | "*" | "/" | "%" | "^" | "&" | "|" | "~" | "!" | "=" | "<" | ">" | "+=" | "-=" | "*=" | "/=" | "%=" | "^=" | "&=" | "|=" | "<<" | ">>" | ">>=" | "<<=" | "==" | "!=" | "<=" | ">=" | "&&" | "||" | "++" | "--" | "," | "->*" | "->" | "()" | "[]")
+    "operator" (
+      "+" | "-" | "*" | "/" | "%" | "^" | "&" | "|" | "~" | "!" | "=" | "<" | ">" |
+      "+=" | "-=" | "*=" | "/=" | "%=" | "^=" | "&=" | "|=" | "<<" | ">>" | ">>=" |
+      "<<=" | "==" | "!=" | "<=" | ">=" | "&&" | "||" | "++" | "--" | "," | "->*" |
+      "->" | "()" | "[]"
+    )
   }
+
+  UnaryOp { "!" | "~" | "-" | "+" }
+
+  ArithOp<expr> { expr }
+  LogicOp<expr> { expr }
+  BitOp<expr> { expr }
+  CompareOp<expr> { expr }
+  UpdateOp<expr> { expr }
 
   charLiteralStart { "L'" | "u'" | "U'" | "u8'" | "'" }
 
