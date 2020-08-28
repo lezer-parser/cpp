@@ -35,7 +35,7 @@
   ternary @right
 }
 
-@top TranslationUnit {
+@top Program {
   topLevelItem*
 }
 
@@ -46,12 +46,6 @@ topLevelItem {
   statement |
   TypeDefinition |
   emptyDeclaration |
-  PreprocIf |
-  PreprocIfdef |
-  PreprocInclude |
-  PreprocDef |
-  PreprocFunctionDef |
-  PreprocCall |
   NamespaceDefinition |
   UsingDeclaration |
   AliasDeclaration |
@@ -63,100 +57,23 @@ topLevelItem {
   Declaration { OperatorCastDeclaration }
 }
 
-PreprocInclude {
-  token_2 (StringLiteral | SystemLibString | Identifier | CallExpression { PreprocCallExpression }) "\n"
+@skip { ppSpace } {
+  PreprocDirective {
+    pp<"include"> (StringLiteral | SystemLibString | Identifier ArgumentList?) "\n" |
+    pp<"define"> Identifier preprocParams? PreprocArg "\n" |
+    pp<"if"> PreprocArg "\n" |
+    pp<"ifdef" | "ifndef"> Identifier "\n" |
+    pp<"else"> "\n" |
+    pp<"endif"> "\n" |
+    pp<"elif"> PreprocArg "\n" |
+    PreprocDirectiveName PreprocArg "\n"
+  }
 }
 
-PreprocDef {
-  token_3 Identifier PreprocArg? "\n"
-}
-
-PreprocFunctionDef {
-  token_4 Identifier PreprocParams PreprocArg? "\n"
-}
-
-PreprocParams {
-  "(" commaSep<Identifier | "..."> ")"
-}
-
-PreprocCall {
-  PreprocDirective PreprocArg? "\n"
-}
-
-PreprocIf {
-  token_5 preprocExpression "\n" topLevelItem* (PreprocElse | PreprocElif)? token_6
-}
-
-PreprocIfdef {
-  (token_7 | token_8) Identifier topLevelItem* (PreprocElse | PreprocElif)? token_9
-}
-
-PreprocElse {
-  token_10 topLevelItem*
-}
-
-PreprocElif {
-  token_11 preprocExpression "\n" topLevelItem* (PreprocElse | PreprocElif)?
-}
-
-PreprocIfInFieldDeclarationList {
-  token_12 preprocExpression "\n" fieldDeclarationListItem* (PreprocElse { PreprocElseInFieldDeclarationList } | PreprocElif { PreprocElifInFieldDeclarationList })? token_13
-}
-
-PreprocIfdefInFieldDeclarationList {
-  (token_14 | token_15) Identifier fieldDeclarationListItem* (PreprocElse { PreprocElseInFieldDeclarationList } | PreprocElif { PreprocElifInFieldDeclarationList })? token_16
-}
-
-PreprocElseInFieldDeclarationList {
-  token_17 fieldDeclarationListItem*
-}
-
-PreprocElifInFieldDeclarationList {
-  token_18 preprocExpression "\n" fieldDeclarationListItem* (PreprocElse { PreprocElseInFieldDeclarationList } | PreprocElif { PreprocElifInFieldDeclarationList })?
-}
-
-preprocExpression {
-  Identifier |
-  CallExpression { PreprocCallExpression } |
-  NumberLiteral |
-  CharLiteral |
-  PreprocDefined |
-  UnaryExpression { PreprocUnaryExpression } |
-  BinaryExpression { PreprocBinaryExpression } |
-  ParenthesizedExpression { PreprocParenthesizedExpression }
-}
-
-PreprocParenthesizedExpression {
-  "(" preprocExpression ")"
-}
-
-PreprocDefined {
-  kw<"defined"> "(" Identifier ")" |
-  kw<"defined"> Identifier
-}
-
-PreprocUnaryExpression {
-  UnaryOp preprocExpression
-}
-
-PreprocCallExpression {
-  Identifier !arguments ArgumentList { "(" commaSep<preprocExpression> ")" }
-}
-
-PreprocBinaryExpression {
-  preprocExpression !add ArithOp<"+" | "-"> preprocExpression |
-  preprocExpression !mult ArithOp<"*" | "/" | "%"> preprocExpression |
-  preprocExpression !logic LogicOp<"||" | "&&"> preprocExpression |
-  preprocExpression !bitOr BitOp<"|"> preprocExpression |
-  preprocExpression !bitXor BitOp<"^"> preprocExpression |
-  preprocExpression !bitAnd BitOp<"&"> preprocExpression |
-  preprocExpression !equal CompareOp<"==" | "!="> preprocExpression |
-  preprocExpression !greaterLess CompareOp<("<" | ">") "="?> preprocExpression |
-  preprocExpression !bitShift BitOp<"<<" | ">>"> preprocExpression
-}
+preprocParams { "(" commaSep<Identifier | "..."> ")" }
 
 FunctionDefinition {
-  Attribute* MsCallModifier? declarationSpecifiers declarator CompoundStatement
+  Attribute* msCallModifier? declarationSpecifiers declarator CompoundStatement
 }
 
 Declaration {
@@ -187,37 +104,13 @@ MsBasedModifier {
   kw<"__based"> ArgumentList
 }
 
-MsCallModifier {
-  kw<"__cdecl"> |
-  kw<"__clrcall"> |
-  kw<"__stdcall"> |
-  kw<"__fastcall"> |
-  kw<"__thiscall"> |
-  kw<"__vectorcall">
+msCallModifier {
+  @specialize[name=MsCallModifier]<identifier,
+    "__cdecl" | "__clrcall" | "__stdcall" | "__fastcall" | "__thiscall" | "__vectorcall">
 }
 
-MsRestrictModifier {
-  kw<"__restrict">
-}
-
-MsUnsignedPtrModifier {
-  kw<"__uptr">
-}
-
-MsSignedPtrModifier {
-  kw<"__sptr">
-}
-
-MsUnalignedPtrModifier {
-  kw<"_unaligned"> |
-  kw<"__unaligned">
-}
-
-MsPointerModifier {
-  MsUnalignedPtrModifier |
-  MsRestrictModifier |
-  MsUnsignedPtrModifier |
-  MsSignedPtrModifier
+msPointerModifier {
+  @specialize[name=MsPointerModifier]<identifier, "__restrict" | "__uptr" | "__sptr" | "_unaligned" | "__unaligned">
 }
 
 DeclarationList {
@@ -225,22 +118,37 @@ DeclarationList {
 }
 
 declarator {
-  PointerDeclarator |
+  PointerDeclarator {
+    MsBasedModifier? "*" msPointerModifier* TypeQualifier* declarator
+  } |
   FunctionDeclarator |
-  ArrayDeclarator |
-  ParenthesizedDeclarator |
+  ArrayDeclarator {
+    declarator !array "[" TypeQualifier* (expression | "*")? "]"
+  } |
+  ParenthesizedDeclarator {
+    "(" declarator ")"
+  } |
   Identifier ~identifier |
-  ReferenceDeclarator |
+  ReferenceDeclarator {
+    ("&" | "&&") !reference declarator
+  } |
   ScopedIdentifier ~identifier |
   TemplateFunction ~identifier |
   OperatorName |
   DestructorName |
-  StructuredBindingDeclarator
+  StructuredBindingDeclarator {
+    "[" commaSep1<Identifier ~identifier> "]"
+  }
+}
+
+FunctionDeclarator {
+  declarator !params ParameterList !specifiers AttributeSpecifier*
+  (!specifiers (TypeQualifier | virtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType))*
 }
 
 fieldDeclarator {
   PointerDeclarator {
-    MsBasedModifier? "*" MsPointerModifier* TypeQualifier* fieldDeclarator
+    MsBasedModifier? "*" msPointerModifier* TypeQualifier* fieldDeclarator
   } |
   FunctionDeclarator {
     fieldDeclarator !params ParameterList (TypeQualifier | virtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType)*
@@ -275,10 +183,6 @@ abstractDeclarator {
   AbstractReferenceDeclarator
 }
 
-ParenthesizedDeclarator {
-  "(" declarator ")"
-}
-
 ParenthesizedTypeDeclarator {
   "(" typeDeclarator ")"
 }
@@ -287,21 +191,12 @@ AbstractParenthesizedDeclarator {
   "(" abstractDeclarator ")"
 }
 
-PointerDeclarator {
-  MsBasedModifier? "*" MsPointerModifier* TypeQualifier* declarator
-}
-
 PointerTypeDeclarator {
-  MsBasedModifier? "*" MsPointerModifier* TypeQualifier* typeDeclarator
+  MsBasedModifier? "*" msPointerModifier* TypeQualifier* typeDeclarator
 }
 
 AbstractPointerDeclarator {
   "*" (!qualifiers TypeQualifier)* abstractDeclarator?
-}
-
-FunctionDeclarator {
-  declarator !params ParameterList !specifiers AttributeSpecifier*
-  (!specifiers (TypeQualifier | virtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType))*
 }
 
 FunctionTypeDeclarator {
@@ -310,10 +205,6 @@ FunctionTypeDeclarator {
 
 AbstractFunctionDeclarator {
   abstractDeclarator? !params ParameterList (TypeQualifier | Noexcept | ThrowSpecifier)* !return TrailingReturnType?
-}
-
-ArrayDeclarator {
-  declarator !array "[" TypeQualifier* (expression | "*")? "]"
 }
 
 ArrayTypeDeclarator {
@@ -357,14 +248,14 @@ typeSpecifier {
   SizedTypeSpecifier |
   primitiveType |
   TemplateType |
-  Auto |
+  kw<"auto"> |
   DependentType |
   Decltype |
   (ScopedTypeIdentifier !simpleTypeIdentifier | TypeIdentifier !simpleTypeIdentifier)
 }
 
 SizedTypeSpecifier {
-  (kw<"signed"> | kw<"unsigned"> | kw<"long"> | kw<"short">)+ (TypeIdentifier | primitiveType)?
+  (kw<"signed"> | kw<"unsigned"> | kw<"long"> | kw<"short">)+ (!typeIdentifier TypeIdentifier | primitiveType)?
 }
 
 EnumSpecifier {
@@ -389,11 +280,6 @@ FieldDeclarationList {
 
 fieldDeclarationListItem {
   FieldDeclaration |
-  PreprocDef |
-  PreprocFunctionDef |
-  PreprocCall |
-  PreprocIf { PreprocIfInFieldDeclarationList } |
-  PreprocIfdef { PreprocIfdefInFieldDeclarationList } |
   TemplateDeclaration |
   FunctionDefinition { InlineMethodDefinition } |
   FunctionDefinition { ConstructorOrDestructorDefinition } |
@@ -514,7 +400,7 @@ expression {
   FieldExpression |
   CompoundLiteralExpression |
   Identifier ~identifier |
-  NumberLiteral |
+  Number |
   StringLiteral |
   True |
   False |
@@ -553,7 +439,7 @@ assignmentLeftExpression {
 }
 
 AssignmentExpression {
-  assignmentLeftExpression !assign ("=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=") expression
+  assignmentLeftExpression !assign (UpdateOp | "=") expression
 }
 
 PointerExpression {
@@ -561,18 +447,21 @@ PointerExpression {
 }
 
 UnaryExpression {
-  UnaryOp !suffix expression
+  (LogicOp<"!"> | ArithOp<"+" | "-"> | BitOp<"~">) !suffix expression
 }
 
+// Note: operators that conflict with other tokens are defined using
+// inline rules (so that the tokens can be shared), others directly using
+// ArithOp-style token helpers.
 BinaryExpression {
   expression !add ArithOp<"+" | "-"> expression |
-  expression !mult ArithOp<"*" | "/" | "%"> expression |
-  expression !logic LogicOp<"||" | "&&"> expression |
+  expression !mult (ArithOp { "*" } | ArithOp<"/" | "%">) expression |
+  expression !logic LogicOp { "||" | "&&" } expression |
   expression !bitOr BitOp<"|"> expression |
   expression !bitXor BitOp<"^"> expression |
-  expression !bitAnd BitOp<"&"> expression |
+  expression !bitAnd BitOp { "&" } expression |
   expression !equal CompareOp<"==" | "!="> expression |
-  expression !greaterLess CompareOp<("<" | ">") "="?> expression |
+  expression !greaterLess (CompareOp { "<" | ">" } | CompareOp<">=" | "<=">) expression |
   expression !bitShift BitOp<"<<" | ">>"> expression
 }
 
@@ -651,7 +540,7 @@ ConcatenatedString {
 }
 
 TypeIdentifier {
-  !typeIdentifier identifier
+  identifier
 }
 
 FieldIdentifier {
@@ -697,10 +586,6 @@ BaseClassClause {
 
 enumBaseClause {
   ":" !typeIdentifier (ScopedTypeIdentifier | TypeIdentifier | SizedTypeSpecifier)
-}
-
-Auto {
-  kw<"auto">
 }
 
 DependentType {
@@ -808,16 +693,8 @@ AccessSpecifier {
   access ":"
 }
 
-ReferenceDeclarator {
-  ("&" | "&&") !reference declarator
-}
-
 AbstractReferenceDeclarator {
   ("&" | "&&") (!reference abstractDeclarator)?
-}
-
-StructuredBindingDeclarator {
-  "[" commaSep1<Identifier ~identifier> "]"
 }
 
 TrailingReturnType {
@@ -910,19 +787,14 @@ LambdaExpression {
 
 LambdaCaptureSpecifier {
   "[" (
-    LambdaDefaultCapture |
+    ("=" | "&") ("," commaSep1<expression>)? |
     commaSep1<expression> |
-    LambdaDefaultCapture "," commaSep1<expression> |
     ""
   ) "]" !capture
 }
 
 ParameterPackExpansion {
   expression !pack "..."
-}
-
-DestructorName {
-  "~" Identifier
 }
 
 ScopedFieldIdentifier {
@@ -967,74 +839,37 @@ commaSep1<term> { term ("," term)* }
 
 commaSepTrailing<term> { "" | term ("," term?)* }
 
-@skip { whitespace | Comment }
+@skip { whitespace | LineComment | BlockComment | PreprocDirective }
 
-@external tokens token from "./tokens" { RawStringLiteral }
+@external tokens rawString from "./tokens" { RawStringLiteral }
 
 @tokens {
   whitespace {
     ($[ \t\r\n] | "\\" "\r"? "\n")+
   }
-  token_2 {
-    "#" $[ 	]* "include"
-  }
-  token_3 {
-    "#" $[ 	]* "define"
-  }
-  token_4 {
-    "#" $[ 	]* "define"
-  }
-  token_5 {
-    "#" $[ 	]* "if"
-  }
-  token_6 {
-    "#" $[ 	]* "endif"
-  }
-  token_7 {
-    "#" $[ 	]* "ifdef"
-  }
-  token_8 {
-    "#" $[ 	]* "ifndef"
-  }
-  token_9 {
-    "#" $[ 	]* "endif"
-  }
-  token_10 {
-    "#" $[ 	]* "else"
-  }
-  token_11 {
-    "#" $[ 	]* "elif"
-  }
-  token_12 {
-    "#" $[ 	]* "if"
-  }
-  token_13 {
-    "#" $[ 	]* "endif"
-  }
-  token_14 {
-    "#" $[ 	]* "ifdef"
-  }
-  token_15 {
-    "#" $[ 	]* "ifndef"
-  }
-  token_16 {
-    "#" $[ 	]* "endif"
-  }
-  token_17 {
-    "#" $[ 	]* "else"
-  }
-  token_18 {
-    "#" $[ 	]* "elif"
-  }
-  PreprocDirective {
+
+  pp[name="#" name]<name> { "#" $[ \t]* name }
+
+  PreprocDirectiveName {
     "#" $[ \t]* $[a-zA-Z] $[a-zA-Z0-9_]*
   }
+
+  @precedence { pp, PreprocDirectiveName }
+
   PreprocArg {
     ![\n] | "\\\\" "\\r"? "\\n"+
   }
-  NumberLiteral {
-    $[-\+]? ("0x" | "0b")? (($[0-9]+ ("'" $[0-9]+)* | "0b" $[0-9]+ ("'" $[0-9]+)* | "0x" $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*) ("." ($[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? | "." $[0-9]+ ("'" $[0-9]+)*) ($[eEpP] ($[-\+]? $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? ("u" | "l" | "U" | "L" | "f" | "F")*
+
+  ppSpace { $[ \t]+ }
+
+  @precedence { "(", PreprocArg, ppSpace }
+
+  Number {
+    ("0x" | "0b")? (($[0-9]+ ("'" $[0-9]+)* | "0b" $[0-9]+ ("'" $[0-9]+)* | "0x" $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*) ("." ($[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? | "." $[0-9]+ ("'" $[0-9]+)*) ($[eEpP] ($[-\+]? $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? ("u" | "l" | "U" | "L" | "f" | "F")*
   }
+
+  @precedence { Number, "." }
+
   EscapeSequence {
     "\\" (
       ![xuU] |
@@ -1044,44 +879,60 @@ commaSepTrailing<term> { "" | term ("," term?)* }
       "U" $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F] $[0-9a-fA-F]
     )
   }
+
   SystemLibString {
     "<" (![>\n] | "\\>")* ">"
   }
+
   identifier {
     $[a-zA-Z_] $[a-zA-Z0-9_]*
   }
-  Comment {
-    "//" ("\\\\" (![\n] | "\\r"? "\\n") | ![\\\n])* | "/*" ![*]* "\\*"+ (![\/*] ![*]* "\\*"+)* "/"
-  }
-  LambdaDefaultCapture {
-    "=" | "&"
-  }
-  OperatorName {
-    "operator" (
-      "+" | "-" | "*" | "/" | "%" | "^" | "&" | "|" | "~" | "!" | "=" | "<" | ">" |
-      "+=" | "-=" | "*=" | "/=" | "%=" | "^=" | "&=" | "|=" | "<<" | ">>" | ">>=" |
-      "<<=" | "==" | "!=" | "<=" | ">=" | "&&" | "||" | "++" | "--" | "," | "->*" |
-      "->" | "()" | "[]"
-    )
+
+  DestructorName {
+    "~" $[ \t]* identifier
   }
 
-  UnaryOp { "!" | "~" | "-" | "+" }
+  @precedence { DestructorName, BitOp }
+
+  LineComment { "//" ("\\" (![\n] | "\\r"? "\\n") | ![\n])* }
+
+  BlockComment { "/*" blockCommentRest }
+
+  blockCommentRest { ![*] blockCommentRest | "*" blockCommentAfterStar }
+
+  blockCommentAfterStar { "/" | "*" blockCommentAfterStar | ![/*] blockCommentRest }
+
+  @precedence { LineComment, BlockComment, ArithOp }
+
+  OperatorName {
+    "operator" (UpdateOp | $[=+\-*/%^~!] | "<" $[<=]? | ">" $[>=]? | $[!=] "=" | "&" "&"? | "|" "|"? | "->" | "()" | "[]")
+  }
+
+  @precedence { OperatorName, identifier }
 
   ArithOp<expr> { expr }
-  LogicOp<expr> { expr }
+
   BitOp<expr> { expr }
+
   CompareOp<expr> { expr }
-  UpdateOp<expr> { expr }
+
+  LogicOp<expr> { expr }
+
+  UpdateOp {
+    ($[*/%+\-&^|] | "<<" | ">>") "="
+  }
 
   charLiteralStart { "L'" | "u'" | "U'" | "u8'" | "'" }
 
   charLiteralEnd { "'" }
 
-  charLiteralContent { ![\n']+ }
+  charLiteralContent { ![\\\n']+ }
 
   stringLiteralStart { "L\"" | "u\"" | "U\"" | "u8\"" | "\"" }
 
   stringLiteralEnd { "\"" }
 
-  stringLiteralContent { ![\\"\n]+ }
+  stringLiteralContent { ![\\\n"]+ }
+
+  @precedence { stringLiteralStart, charLiteralStart, identifier }
 }
