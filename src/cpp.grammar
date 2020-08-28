@@ -59,7 +59,7 @@ topLevelItem {
 
 @skip { ppSpace } {
   PreprocDirective {
-    pp<"include"> (StringLiteral | SystemLibString | Identifier ArgumentList?) "\n" |
+    pp<"include"> (String | SystemLibString | Identifier ArgumentList?) "\n" |
     pp<"define"> Identifier preprocParams? PreprocArg "\n" |
     pp<"if"> PreprocArg "\n" |
     pp<"ifdef" | "ifndef"> Identifier "\n" |
@@ -89,7 +89,7 @@ declarationSpecifiers {
 }
 
 LinkageSpecification {
-  kw<"extern"> StringLiteral (FunctionDefinition | Declaration | DeclarationList)
+  kw<"extern"> String (FunctionDefinition | Declaration | DeclarationList)
 }
 
 AttributeSpecifier {
@@ -401,7 +401,7 @@ expression {
   CompoundLiteralExpression |
   Identifier ~identifier |
   Number |
-  StringLiteral |
+  String |
   True |
   False |
   kw<"NULL"> |
@@ -416,7 +416,7 @@ expression {
   ParameterPackExpansion |
   kw<"nullptr"> |
   kw<"this"> |
-  RawStringLiteral
+  RawString
 }
 
 CommaExpression {
@@ -530,13 +530,13 @@ FieldDesignator {
     charLiteralStart (EscapeSequence | charLiteralContent) charLiteralEnd
   }
 
-  StringLiteral {
+  String {
     stringLiteralStart (stringLiteralContent | EscapeSequence)* stringLiteralEnd
   }
 }
 
 ConcatenatedString {
-  (RawStringLiteral | StringLiteral) (RawStringLiteral | StringLiteral)+
+  (RawString | String) (RawString | String)+
 }
 
 TypeIdentifier {
@@ -738,7 +738,7 @@ AliasDeclaration {
 }
 
 StaticAssertDeclaration {
-  kw<"static_assert"> "(" expression ("," (StringLiteral | RawStringLiteral | ConcatenatedString))? ")" ";"
+  kw<"static_assert"> "(" expression ("," (String | RawString | ConcatenatedString))? ")" ";"
 }
 
 ConditionClause {
@@ -831,6 +831,8 @@ primitiveType {
     "char16_t" | "char32_t" | "char64_t">
 }
 
+RawString { rawStringStart rawStringContent* rawStringEnd }
+
 kw<term> { @specialize[name={term}]<identifier, term> }
 
 commaSep<term> { "" | term ("," term)* }
@@ -841,7 +843,9 @@ commaSepTrailing<term> { "" | term ("," term?)* }
 
 @skip { whitespace | LineComment | BlockComment | PreprocDirective }
 
-@external tokens rawString from "./tokens" { RawStringLiteral }
+@external tokens rawString from "./tokens" { rawStringStart }
+
+@external tokens rawStringContinue from "./tokens" { rawStringContent, rawStringEnd }
 
 @tokens {
   whitespace {
