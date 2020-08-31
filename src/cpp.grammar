@@ -3,6 +3,7 @@
   subscript
   arguments
   suffix @left
+  prefix @left
   pointer @left
   mult @left
   add @left
@@ -52,7 +53,7 @@ topLevelItem {
   StaticAssertDeclaration |
   TemplateDeclaration |
   TemplateInstantiation |
-  FunctionDefinition { ConstructorOrDestructorDefinition } |
+  FunctionDefinition { constructorOrDestructorDefinition } |
   FunctionDefinition { OperatorCastDefinition } |
   Declaration { OperatorCastDeclaration }
 }
@@ -81,11 +82,11 @@ Declaration {
 }
 
 TypeDefinition {
-  kw<"typedef"> TypeQualifier* typeSpecifier commaSep1<typeDeclarator> ";"
+  kw<"typedef"> typeQualifier* typeSpecifier commaSep1<typeDeclarator> ";"
 }
 
 declarationSpecifiers {
-  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)* ~specifiers typeSpecifier (StorageClassSpecifier | TypeQualifier | AttributeSpecifier | MsDeclspecModifier)*
+  (storageClassSpecifier | typeQualifier | AttributeSpecifier | MsDeclspecModifier)* ~specifiers typeSpecifier (storageClassSpecifier | typeQualifier | AttributeSpecifier | MsDeclspecModifier)*
 }
 
 LinkageSpecification {
@@ -119,11 +120,11 @@ DeclarationList {
 
 declarator {
   PointerDeclarator {
-    MsBasedModifier? "*" msPointerModifier* TypeQualifier* declarator
+    MsBasedModifier? "*" msPointerModifier* typeQualifier* declarator
   } |
   FunctionDeclarator |
   ArrayDeclarator {
-    declarator !array "[" TypeQualifier* (expression | "*")? "]"
+    declarator !array "[" typeQualifier* (expression | "*")? "]"
   } |
   ParenthesizedDeclarator {
     "(" declarator ")"
@@ -143,18 +144,18 @@ declarator {
 
 FunctionDeclarator {
   declarator !params ParameterList !specifiers AttributeSpecifier*
-  (!specifiers (TypeQualifier | virtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType))*
+  (!specifiers (typeQualifier | virtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType))*
 }
 
 fieldDeclarator {
   PointerDeclarator {
-    MsBasedModifier? "*" msPointerModifier* TypeQualifier* fieldDeclarator
+    MsBasedModifier? "*" msPointerModifier* typeQualifier* fieldDeclarator
   } |
   FunctionDeclarator {
-    fieldDeclarator !params ParameterList (TypeQualifier | virtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType)*
+    fieldDeclarator !params ParameterList (typeQualifier | virtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType)*
   } |
   ArrayDeclarator {
-    fieldDeclarator !array "[" TypeQualifier* (expression | "*")? "]"
+    fieldDeclarator !array "[" typeQualifier* (expression | "*")? "]"
   } |
   ParenthesizedDeclarator {
     "(" fieldDeclarator ")"
@@ -192,11 +193,11 @@ AbstractParenthesizedDeclarator {
 }
 
 PointerTypeDeclarator {
-  MsBasedModifier? "*" msPointerModifier* TypeQualifier* typeDeclarator
+  MsBasedModifier? "*" msPointerModifier* typeQualifier* typeDeclarator
 }
 
 AbstractPointerDeclarator {
-  "*" (!qualifiers TypeQualifier)* abstractDeclarator?
+  "*" (!qualifiers typeQualifier)* abstractDeclarator?
 }
 
 FunctionTypeDeclarator {
@@ -204,15 +205,15 @@ FunctionTypeDeclarator {
 }
 
 AbstractFunctionDeclarator {
-  abstractDeclarator? !params ParameterList (TypeQualifier | Noexcept | ThrowSpecifier)* !return TrailingReturnType?
+  abstractDeclarator? !params ParameterList (typeQualifier | Noexcept | ThrowSpecifier)* !return TrailingReturnType?
 }
 
 ArrayTypeDeclarator {
-  typeDeclarator !array "[" TypeQualifier* (expression | "*")? "]"
+  typeDeclarator !array "[" typeQualifier* (expression | "*")? "]"
 }
 
 AbstractArrayDeclarator {
-  abstractDeclarator? !array "[" TypeQualifier* (expression | "*")? "]"
+  abstractDeclarator? !array "[" typeQualifier* (expression | "*")? "]"
 }
 
 InitDeclarator {
@@ -224,33 +225,39 @@ CompoundStatement {
   !statement "{" topLevelItem* !statement "}"
 }
 
-StorageClassSpecifier {
-  kw<"extern"> |
-  kw<"static"> |
-  kw<"register"> |
-  kw<"inline">
+storageClassSpecifier {
+  @specialize[name=StorageClassSpecifier]<identifier,
+    "extern" | "static" | "register" | "inline">
 }
 
-TypeQualifier {
-  kw<"const"> |
-  kw<"volatile"> |
-  kw<"restrict"> |
-  kw<"_Atomic"> |
-  kw<"mutable"> |
-  kw<"constexpr">
+typeQualifier {
+  @specialize[name=TypeQualifier]<identifier,
+    "const" | "volatile" | "restrict" | "_Atomic" | "mutable" | "constexpr">
 }
 
 typeSpecifier {
-  StructSpecifier |
-  UnionSpecifier |
-  EnumSpecifier |
-  ClassSpecifier |
+  StructSpecifier {
+    kw<"struct"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
+  } |
+  UnionSpecifier {
+    kw<"union"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
+  } |
+  EnumSpecifier {
+    kw<"enum"> (kw<"class"> | kw<"struct">)? !structName (className enumBaseClause? EnumeratorList? | EnumeratorList)
+  } |
+  ClassSpecifier {
+    kw<"class"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
+  } |
+  DependentType {
+    kw<"typename"> typeSpecifier
+  } |
+  Decltype {
+    kw<"decltype"> "(" expression ")"
+  } |
   SizedTypeSpecifier |
   primitiveType |
   TemplateType |
   kw<"auto"> |
-  DependentType |
-  Decltype |
   (ScopedTypeIdentifier !simpleTypeIdentifier | TypeIdentifier !simpleTypeIdentifier)
 }
 
@@ -258,20 +265,8 @@ SizedTypeSpecifier {
   (kw<"signed"> | kw<"unsigned"> | kw<"long"> | kw<"short">)+ (!typeIdentifier TypeIdentifier | primitiveType)?
 }
 
-EnumSpecifier {
-  kw<"enum"> (kw<"class"> | kw<"struct">)? !structName (className enumBaseClause? EnumeratorList? | EnumeratorList)
-}
-
 EnumeratorList {
   "{" commaSepTrailing<Enumerator> "}"
-}
-
-StructSpecifier {
-  kw<"struct"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
-}
-
-UnionSpecifier {
-  kw<"union"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
 }
 
 FieldDeclarationList {
@@ -282,8 +277,8 @@ fieldDeclarationListItem {
   FieldDeclaration |
   TemplateDeclaration |
   FunctionDefinition { InlineMethodDefinition } |
-  FunctionDefinition { ConstructorOrDestructorDefinition } |
-  Declaration { ConstructorOrDestructorDeclaration } |
+  FunctionDefinition { constructorOrDestructorDefinition } |
+  Declaration { constructorOrDestructorDeclaration } |
   FunctionDefinition { OperatorCastDefinition } |
   Declaration { OperatorCastDeclaration } |
   FriendDeclaration |
@@ -466,7 +461,7 @@ BinaryExpression {
 }
 
 UpdateExpression {
-  ("--" | "++") expression | expression !suffix ("--" | "++")
+  ("--" | "++") !prefix expression | expression !suffix ("--" | "++")
 }
 
 CastExpression {
@@ -474,7 +469,7 @@ CastExpression {
 }
 
 TypeDescriptor {
-  TypeQualifier* typeSpecifier TypeQualifier* abstractDeclarator?
+  typeQualifier* typeSpecifier typeQualifier* abstractDeclarator?
 }
 
 SizeofExpression {
@@ -559,14 +554,6 @@ emptyDeclaration {
   typeSpecifier ";"
 }
 
-Decltype {
-  kw<"decltype"> "(" expression ")"
-}
-
-ClassSpecifier {
-  kw<"class"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
-}
-
 className {
   (TypeIdentifier | ScopedTypeIdentifier | TemplateType) !structName
 }
@@ -588,12 +575,16 @@ enumBaseClause {
   ":" !typeIdentifier (ScopedTypeIdentifier | TypeIdentifier | SizedTypeSpecifier)
 }
 
-DependentType {
-  kw<"typename"> typeSpecifier
-}
-
 TemplateDeclaration {
-  kw<"template"> TemplateParameterList (emptyDeclaration | AliasDeclaration | Declaration | TemplateDeclaration | FunctionDefinition | FunctionDefinition { ConstructorOrDestructorDefinition } | FunctionDefinition { OperatorCastDefinition })
+  kw<"template"> TemplateParameterList (
+    emptyDeclaration |
+    AliasDeclaration |
+    Declaration |
+    TemplateDeclaration |
+    FunctionDefinition |
+    FunctionDefinition { constructorOrDestructorDefinition } |
+    FunctionDefinition { OperatorCastDefinition }
+  )
 }
 
 TemplateInstantiation {
@@ -633,19 +624,19 @@ OptionalParameterDeclaration {
 }
 
 VariadicParameterDeclaration {
-  declarationSpecifiers (VariadicDeclarator | ReferenceDeclarator { VariadicReferenceDeclarator })
+  declarationSpecifiers (
+    VariadicDeclarator |
+    ReferenceDeclarator { ("&&" | "&") VariadicDeclarator }
+  )
 }
 
 VariadicDeclarator {
   "..." Identifier?
 }
 
-VariadicReferenceDeclarator {
-  ("&&" | "&") VariadicDeclarator
-}
-
 OperatorCast {
-  ((NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? "::")? kw<"operator"> declarationSpecifiers !cast abstractDeclarator
+  ((NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? "::")?
+  kw<"operator"> declarationSpecifiers !cast abstractDeclarator
 }
 
 FieldInitializerList {
@@ -662,18 +653,20 @@ InlineMethodDefinition {
 }
 
 OperatorCastDefinition {
-  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~specifiers (kw<"virtual"> | ExplicitFunctionSpecifier)? OperatorCast (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
+  (storageClassSpecifier | typeQualifier | AttributeSpecifier)*
+  ~specifiers (kw<"virtual"> | ExplicitFunctionSpecifier)?
+  OperatorCast (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
 OperatorCastDeclaration {
   (kw<"virtual"> | ExplicitFunctionSpecifier)? OperatorCast ("=" expression)? ";"
 }
 
-ConstructorOrDestructorDefinition {
-  (StorageClassSpecifier | TypeQualifier | AttributeSpecifier)* ~specifiers (kw<"virtual"> | ExplicitFunctionSpecifier)? FunctionDeclarator FieldInitializerList? (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
+constructorOrDestructorDefinition {
+  (storageClassSpecifier | typeQualifier | AttributeSpecifier)* ~specifiers (kw<"virtual"> | ExplicitFunctionSpecifier)? FunctionDeclarator FieldInitializerList? (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
-ConstructorOrDestructorDeclaration {
+constructorOrDestructorDeclaration {
   (kw<"virtual"> | ExplicitFunctionSpecifier)? FunctionDeclarator ";"
 }
 
@@ -698,7 +691,7 @@ AbstractReferenceDeclarator {
 }
 
 TrailingReturnType {
-  "->" TypeQualifier? typeSpecifier abstractDeclarator?
+  "->" typeQualifier? typeSpecifier abstractDeclarator?
 }
 
 Noexcept {
@@ -770,7 +763,7 @@ Attribute {
 }
 
 NewExpression {
-  "::"? kw<"new"> ArgumentList? typeSpecifier NewDeclarator (!arguments (ArgumentList | InitializerList))?
+  "::"? kw<"new"> ArgumentList? typeSpecifier (!more NewDeclarator)? (!arguments (ArgumentList | InitializerList))?
 }
 
 NewDeclarator {
