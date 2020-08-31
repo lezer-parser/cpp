@@ -36,6 +36,8 @@
   ternary @right
 }
 
+@dynamic precedence { boost3, boost2, boost, penalize @penalty }
+
 @top Program {
   topLevelItem*
 }
@@ -119,14 +121,14 @@ DeclarationList {
 }
 
 declarator {
-  PointerDeclarator {
+  PointerDeclarator[dynamicPrecedence=boost] {
     MsBasedModifier? "*" msPointerModifier* typeQualifier* declarator
   } |
   FunctionDeclarator |
   ArrayDeclarator {
     declarator !array "[" typeQualifier* (expression | "*")? "]"
   } |
-  ParenthesizedDeclarator {
+  ParenthesizedDeclarator[dynamicPrecedence=penalize] {
     "(" declarator ")"
   } |
   Identifier ~identifier |
@@ -137,7 +139,7 @@ declarator {
   TemplateFunction ~identifier |
   OperatorName |
   DestructorName |
-  StructuredBindingDeclarator {
+  StructuredBindingDeclarator[dynamicPrecedence=penalize] {
     "[" commaSep1<Identifier ~identifier> "]"
   }
 }
@@ -148,7 +150,7 @@ FunctionDeclarator {
 }
 
 fieldDeclarator {
-  PointerDeclarator {
+  PointerDeclarator[dynamicPrecedence=boost] {
     MsBasedModifier? "*" msPointerModifier* typeQualifier* fieldDeclarator
   } |
   FunctionDeclarator {
@@ -157,7 +159,7 @@ fieldDeclarator {
   ArrayDeclarator {
     fieldDeclarator !array "[" typeQualifier* (expression | "*")? "]"
   } |
-  ParenthesizedDeclarator {
+  ParenthesizedDeclarator[dynamicPrecedence=penalize] {
     "(" fieldDeclarator ")"
   } |
   FieldIdentifier |
@@ -172,32 +174,32 @@ typeDeclarator {
   PointerDeclarator { PointerTypeDeclarator } |
   FunctionDeclarator { FunctionTypeDeclarator } |
   ArrayDeclarator { ArrayTypeDeclarator } |
-  ParenthesizedDeclarator { ParenthesizedTypeDeclarator } |
+  ParenthesizedDeclarator[dynamicPrecedence=penalize] { ParenthesizedTypeDeclarator } |
   TypeIdentifier
 }
 
 abstractDeclarator {
-  AbstractPointerDeclarator |
+  AbstractPointerDeclarator[dynamicPrecedence=boost] {
+    "*" (!qualifiers typeQualifier)* abstractDeclarator?
+  } |
   AbstractFunctionDeclarator |
-  AbstractArrayDeclarator |
-  AbstractParenthesizedDeclarator |
-  AbstractReferenceDeclarator
+  AbstractArrayDeclarator {
+    abstractDeclarator? !array "[" typeQualifier* (expression | "*")? "]"
+  } |
+  AbstractParenthesizedDeclarator {
+    "(" abstractDeclarator ")"
+  } |
+  AbstractReferenceDeclarator {
+    ("&" | "&&") (!reference abstractDeclarator)?
+  }
 }
 
 ParenthesizedTypeDeclarator {
   "(" typeDeclarator ")"
 }
 
-AbstractParenthesizedDeclarator {
-  "(" abstractDeclarator ")"
-}
-
 PointerTypeDeclarator {
   MsBasedModifier? "*" msPointerModifier* typeQualifier* typeDeclarator
-}
-
-AbstractPointerDeclarator {
-  "*" (!qualifiers typeQualifier)* abstractDeclarator?
 }
 
 FunctionTypeDeclarator {
@@ -210,10 +212,6 @@ AbstractFunctionDeclarator {
 
 ArrayTypeDeclarator {
   typeDeclarator !array "[" typeQualifier* (expression | "*")? "]"
-}
-
-AbstractArrayDeclarator {
-  abstractDeclarator? !array "[" typeQualifier* (expression | "*")? "]"
 }
 
 InitDeclarator {
@@ -682,10 +680,6 @@ AccessSpecifier {
   access ":"
 }
 
-AbstractReferenceDeclarator {
-  ("&" | "&&") (!reference abstractDeclarator)?
-}
-
 TrailingReturnType {
   "->" typeQualifier? typeSpecifier abstractDeclarator?
 }
@@ -711,7 +705,11 @@ TemplateFunction {
 }
 
 TemplateArgumentList {
-  "<" commaSep<TypeDescriptor | ParameterPackExpansion { TypeDescriptor "..." } | expression> templateArgEnd
+  "<" commaSep<
+    [dynamicPrecedence=boost3] { TypeDescriptor } |
+    ParameterPackExpansion[dynamicPrecedence=boost2] { TypeDescriptor "..." } |
+    [dynamicPrecedence=boost] { expression }
+  > templateArgEnd
 }
 
 NamespaceDefinition {
