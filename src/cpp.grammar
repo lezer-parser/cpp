@@ -36,8 +36,6 @@
   ternary @right
 }
 
-@dynamic precedence { boost3, boost2, boost, penalize @penalty }
-
 @top Program {
   topLevelItem*
 }
@@ -121,14 +119,14 @@ DeclarationList {
 }
 
 declarator {
-  PointerDeclarator[dynamicPrecedence=boost] {
+  PointerDeclarator[dynamicPrecedence=1] {
     MsBasedModifier? "*" msPointerModifier* typeQualifier* declarator
   } |
   FunctionDeclarator |
   ArrayDeclarator {
     declarator !array "[" typeQualifier* (expression | "*")? "]"
   } |
-  ParenthesizedDeclarator[dynamicPrecedence=penalize] {
+  ParenthesizedDeclarator[dynamicPrecedence=-10] {
     "(" declarator ")"
   } |
   Identifier ~identifier |
@@ -139,7 +137,7 @@ declarator {
   TemplateFunction ~identifier |
   OperatorName |
   DestructorName |
-  StructuredBindingDeclarator[dynamicPrecedence=penalize] {
+  StructuredBindingDeclarator[dynamicPrecedence=-1] {
     "[" commaSep1<Identifier ~identifier> "]"
   }
 }
@@ -150,7 +148,7 @@ FunctionDeclarator {
 }
 
 fieldDeclarator {
-  PointerDeclarator[dynamicPrecedence=boost] {
+  PointerDeclarator[dynamicPrecedence=1] {
     MsBasedModifier? "*" msPointerModifier* typeQualifier* fieldDeclarator
   } |
   FunctionDeclarator {
@@ -159,7 +157,7 @@ fieldDeclarator {
   ArrayDeclarator {
     fieldDeclarator !array "[" typeQualifier* (expression | "*")? "]"
   } |
-  ParenthesizedDeclarator[dynamicPrecedence=penalize] {
+  ParenthesizedDeclarator[dynamicPrecedence=-10] {
     "(" fieldDeclarator ")"
   } |
   FieldIdentifier |
@@ -174,12 +172,12 @@ typeDeclarator {
   PointerDeclarator { PointerTypeDeclarator } |
   FunctionDeclarator { FunctionTypeDeclarator } |
   ArrayDeclarator { ArrayTypeDeclarator } |
-  ParenthesizedDeclarator[dynamicPrecedence=penalize] { ParenthesizedTypeDeclarator } |
+  ParenthesizedDeclarator[dynamicPrecedence=-10] { ParenthesizedTypeDeclarator } |
   TypeIdentifier
 }
 
 abstractDeclarator {
-  AbstractPointerDeclarator[dynamicPrecedence=boost] {
+  AbstractPointerDeclarator[dynamicPrecedence=1] {
     "*" (!qualifiers typeQualifier)* abstractDeclarator?
   } |
   AbstractFunctionDeclarator |
@@ -706,9 +704,9 @@ TemplateFunction {
 
 TemplateArgumentList {
   "<" commaSep<
-    [dynamicPrecedence=boost3] { TypeDescriptor } |
-    ParameterPackExpansion[dynamicPrecedence=boost2] { TypeDescriptor "..." } |
-    [dynamicPrecedence=boost] { expression }
+    [dynamicPrecedence=3] { TypeDescriptor } |
+    ParameterPackExpansion[dynamicPrecedence=2] { TypeDescriptor "..." } |
+    [dynamicPrecedence=1] { expression }
   > templateArgEnd
 }
 
