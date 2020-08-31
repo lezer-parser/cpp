@@ -54,8 +54,8 @@ topLevelItem {
   TemplateDeclaration |
   TemplateInstantiation |
   FunctionDefinition { constructorOrDestructorDefinition } |
-  FunctionDefinition { OperatorCastDefinition } |
-  Declaration { OperatorCastDeclaration }
+  FunctionDefinition { operatorCastDefinition } |
+  Declaration { operatorCastDeclaration }
 }
 
 @skip { ppSpace } {
@@ -256,9 +256,9 @@ typeSpecifier {
   } |
   SizedTypeSpecifier |
   primitiveType |
-  TemplateType |
   kw<"auto"> |
-  (ScopedTypeIdentifier !simpleTypeIdentifier | TypeIdentifier !simpleTypeIdentifier)
+  (ScopedTypeIdentifier !simpleTypeIdentifier | TypeIdentifier !simpleTypeIdentifier) |
+  TemplateType
 }
 
 SizedTypeSpecifier {
@@ -276,11 +276,16 @@ FieldDeclarationList {
 fieldDeclarationListItem {
   FieldDeclaration |
   TemplateDeclaration |
-  FunctionDefinition { InlineMethodDefinition } |
+  FunctionDefinition {
+    Attribute* kw<"virtual">? declarationSpecifiers
+    fieldDeclarator (CompoundStatement | !more DefaultMethodClause | DeleteMethodClause)
+  } |
   FunctionDefinition { constructorOrDestructorDefinition } |
-  Declaration { constructorOrDestructorDeclaration } |
-  FunctionDefinition { OperatorCastDefinition } |
-  Declaration { OperatorCastDeclaration } |
+  Declaration {
+    (kw<"virtual"> | ExplicitFunctionSpecifier)? FunctionDeclarator ";"
+  } |
+  FunctionDefinition { operatorCastDefinition } |
+  Declaration { operatorCastDeclaration } |
   FriendDeclaration |
   AccessSpecifier |
   AliasDeclaration |
@@ -456,7 +461,7 @@ BinaryExpression {
   expression !bitXor BitOp<"^"> expression |
   expression !bitAnd BitOp { "&" } expression |
   expression !equal CompareOp<"==" | "!="> expression |
-  expression !greaterLess (CompareOp { "<" | ">" } | CompareOp<">=" | "<=">) expression |
+  expression !greaterLess (~lessThan CompareOp { "<" | ">" } | CompareOp<">=" | "<=">) expression |
   expression !bitShift BitOp<"<<" | ">>"> expression
 }
 
@@ -583,7 +588,7 @@ TemplateDeclaration {
     TemplateDeclaration |
     FunctionDefinition |
     FunctionDefinition { constructorOrDestructorDefinition } |
-    FunctionDefinition { OperatorCastDefinition }
+    FunctionDefinition { operatorCastDefinition }
   )
 }
 
@@ -600,7 +605,7 @@ TemplateParameterList {
     VariadicTypeParameterDeclaration |
     OptionalTypeParameterDeclaration |
     TemplateTemplateParameterDeclaration
-  > ">"
+  > templateArgEnd
 }
 
 TypeParameterDeclaration {
@@ -647,27 +652,18 @@ FieldInitializer {
   (FieldIdentifier | ScopedFieldIdentifier) !arguments (InitializerList | ArgumentList) "..."?
 }
 
-InlineMethodDefinition {
-  Attribute* kw<"virtual">? declarationSpecifiers
-  fieldDeclarator (CompoundStatement | !more DefaultMethodClause | DeleteMethodClause)
-}
-
-OperatorCastDefinition {
+operatorCastDefinition {
   (storageClassSpecifier | typeQualifier | AttributeSpecifier)*
   ~specifiers (kw<"virtual"> | ExplicitFunctionSpecifier)?
   OperatorCast (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
-OperatorCastDeclaration {
+operatorCastDeclaration {
   (kw<"virtual"> | ExplicitFunctionSpecifier)? OperatorCast ("=" expression)? ";"
 }
 
 constructorOrDestructorDefinition {
   (storageClassSpecifier | typeQualifier | AttributeSpecifier)* ~specifiers (kw<"virtual"> | ExplicitFunctionSpecifier)? FunctionDeclarator FieldInitializerList? (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
-}
-
-constructorOrDestructorDeclaration {
-  (kw<"virtual"> | ExplicitFunctionSpecifier)? FunctionDeclarator ";"
 }
 
 DefaultMethodClause {
@@ -703,19 +699,19 @@ ThrowSpecifier {
 }
 
 TemplateType {
-  (TypeIdentifier | ScopedTypeIdentifier) ~identifier TemplateArgumentList
+  (TypeIdentifier | ScopedTypeIdentifier) ~identifier ~lessThan !greaterLess TemplateArgumentList
 }
 
 TemplateMethod {
-  (FieldIdentifier | ScopedFieldIdentifier) ~identifier TemplateArgumentList
+  (FieldIdentifier | ScopedFieldIdentifier) ~identifier ~lessThan TemplateArgumentList
 }
 
 TemplateFunction {
-  (Identifier | ScopedIdentifier) ~identifier TemplateArgumentList
+  (Identifier | ScopedIdentifier) ~identifier ~lessThan TemplateArgumentList
 }
 
 TemplateArgumentList {
-  "<" commaSep<TypeDescriptor | ParameterPackExpansion { TypeDescriptor "..." } | expression> ">"
+  "<" commaSep<TypeDescriptor | ParameterPackExpansion { TypeDescriptor "..." } | expression> templateArgEnd
 }
 
 NamespaceDefinition {
@@ -930,6 +926,14 @@ commaSepTrailing<term> { "" | term ("," term?)* }
   stringLiteralEnd { "\"" }
 
   stringLiteralContent { ![\\\n"]+ }
+
+  // Specified separately so that it can override ">>"
+  templateArgEnd[name="\">\""] { ">" }
+
+  @precedence { templateArgEnd, BitOp<"<<" | ">>">, ">" }
+
+  "(" ")" "{" "}" "[" "]"
+  "," "<" ">" "::"
 
   @precedence { stringLiteralStart, charLiteralStart, identifier }
 }
