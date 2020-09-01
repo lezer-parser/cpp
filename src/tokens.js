@@ -1,11 +1,11 @@
 import {ExternalTokenizer} from "lezer"
-import {rawStringStart, rawStringEnd, rawStringContent} from "./parser.terms.js"
+import {rawStringStart, rawStringEnd, rawStringContent, templateArgsEndFallback} from "./parser.terms.js"
 
-const R = 82, L = 76, u = 117, U = 85,
-      _8 = 56,
+const R = 82, L = 76, u = 117, U = 85, _8 = 56,
       Quote = 34,
       ParenL = 40, ParenR = 41,
-      Space = 32, Newline = 10
+      Space = 32, Newline = 10,
+      GreaterThan = 62
 
 export const rawString = new ExternalTokenizer((input, token) => {
   let pos = token.start, next = input.get(pos++)
@@ -52,3 +52,11 @@ export const rawStringContinue = new ExternalTokenizer((input, token, stack) => 
     next = input.get(pos++)
   }
 }, {contextual: true})
+
+// Used to provide a template-args-closing token when the next
+// characters are ">>", in which case the regular tokenizer will only
+// see a bit shift op.
+export const closeTemplateFallback = new ExternalTokenizer((input, token) => {
+  if (input.get(token.start) == GreaterThan && input.get(token.start + 1) == GreaterThan)
+    token.accept(templateArgsEndFallback, token.start + 1)
+}, {extend: true})

@@ -449,7 +449,8 @@ BinaryExpression {
   expression !bitXor BitOp<"^"> expression |
   expression !bitAnd BitOp { "&" } expression |
   expression !equal CompareOp<"==" | "!="> expression |
-  expression !greaterLess (~lessThan CompareOp { "<" | ">" } | CompareOp<">=" | "<=">) expression |
+  expression !greaterLess
+    (CompareOp<"<=" | ">="> | @extend[name=CompareOp]<"<"> | @extend[name=CompareOp]<templateArgsEnd, ">">) expression |
   expression !bitShift BitOp<"<<" | ">>"> expression
 }
 
@@ -585,7 +586,7 @@ TemplateInstantiation {
 }
 
 TemplateParameterList {
-  templateArgStart commaSep<templateParameter> templateArgEnd
+  "<" commaSep<templateParameter> (templateArgsEnd | templateArgsEndFallback)
 }
 
 templateParameter {
@@ -684,23 +685,23 @@ ThrowSpecifier {
 }
 
 TemplateType {
-  (TypeIdentifier | ScopedTypeIdentifier) ~identifier ~lessThan TemplateArgumentList
+  (TypeIdentifier | ScopedTypeIdentifier) ~identifier TemplateArgumentList
 }
 
 TemplateMethod {
-  (FieldIdentifier | ScopedFieldIdentifier) ~identifier ~lessThan TemplateArgumentList
+  (FieldIdentifier | ScopedFieldIdentifier) ~identifier TemplateArgumentList
 }
 
 TemplateFunction {
-  (Identifier | ScopedIdentifier) ~identifier ~lessThan TemplateArgumentList
+  (Identifier | ScopedIdentifier) ~identifier TemplateArgumentList
 }
 
 TemplateArgumentList {
-  templateArgStart commaSep<
+  "<" commaSep<
     [dynamicPrecedence=3] { TypeDescriptor } |
     ParameterPackExpansion[dynamicPrecedence=2] { TypeDescriptor "..." } |
     [dynamicPrecedence=1] { expression }
-  > templateArgEnd
+  > (templateArgsEnd | templateArgsEndFallback)
 }
 
 NamespaceDefinition {
@@ -824,13 +825,13 @@ commaSep1<term> { term ("," term)* }
 
 commaSepTrailing<term> { "" | term ("," term?)* }
 
-templateArgStart { @extend[name="<"]<"<"> } // FIXME name the compare ops CompareOp
-
 @skip { whitespace | LineComment | BlockComment | PreprocDirective }
 
 @external tokens rawString from "./tokens" { rawStringStart }
 
 @external tokens rawStringContinue from "./tokens" { rawStringContent, rawStringEnd }
+
+@external tokens closeTemplateFallback from "./tokens" { templateArgsEndFallback[name=">"] }
 
 @tokens {
   whitespace {
@@ -926,13 +927,10 @@ templateArgStart { @extend[name="<"]<"<"> } // FIXME name the compare ops Compar
 
   stringLiteralContent { ![\\\n"]+ }
 
-  // Specified separately so that it can override ">>"
-  templateArgEnd[name=">"] { ">" }
-
-  @precedence { templateArgEnd, BitOp<"<<" | ">>">, ">" }
+  templateArgsEnd[name=">"] { ">" }
 
   "(" ")" "{" "}" "[" "]"
-  "," "<" ">" "::"
+  "," "<" "::"
 
   @precedence { stringLiteralStart, charLiteralStart, identifier }
 }
