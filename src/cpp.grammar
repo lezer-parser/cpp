@@ -15,6 +15,7 @@
   bitXor @left
   bitOr @left
   logic @left
+  concat @left
   params
   array
   specifiers
@@ -451,7 +452,8 @@ BinaryExpression {
   expression !equal CompareOp<"==" | "!="> expression |
   expression !greaterLess
     (CompareOp<"<=" | ">="> | @extend[name=CompareOp]<"<"> | @extend[name=CompareOp]<templateArgsEnd, ">">) expression |
-  expression !bitShift BitOp<"<<" | ">>"> expression
+  expression !bitShift BitOp<"<<" | ">>"> expression |
+  expression !concat "++" expression
 }
 
 UpdateExpression {
@@ -522,6 +524,8 @@ FieldDesignator {
   String {
     stringLiteralStart (stringLiteralContent | EscapeSequence)* stringLiteralEnd
   }
+
+  Macro { MacroName (whitespace? ArgumentList?) }
 }
 
 ConcatenatedString {
@@ -825,7 +829,7 @@ commaSep1<term> { term ("," term)* }
 
 commaSepTrailing<term> { "" | term ("," term?)* }
 
-@skip { whitespace | LineComment | BlockComment | PreprocDirective }
+@skip { whitespace | LineComment | BlockComment | PreprocDirective | Macro }
 
 @external tokens rawString from "./tokens" { rawStringStart }
 
@@ -934,3 +938,5 @@ commaSepTrailing<term> { "" | term ("," term?)* }
 
   @precedence { stringLiteralStart, charLiteralStart, identifier }
 }
+
+@external tokens maybeMacro from "./tokens" { MacroName }

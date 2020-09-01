@@ -1,7 +1,8 @@
 import {ExternalTokenizer} from "lezer"
-import {rawStringStart, rawStringEnd, rawStringContent, templateArgsEndFallback} from "./parser.terms.js"
+import {rawStringStart, rawStringEnd, rawStringContent, templateArgsEndFallback, MacroName} from "./parser.terms.js"
 
 const R = 82, L = 76, u = 117, U = 85, _8 = 56,
+      A = 65, Z = 90, Underscore = 95,
       Quote = 34,
       ParenL = 40, ParenR = 41,
       Space = 32, Newline = 10,
@@ -60,3 +61,13 @@ export const closeTemplateFallback = new ExternalTokenizer((input, token) => {
   if (input.get(token.start) == GreaterThan && input.get(token.start + 1) == GreaterThan)
     token.accept(templateArgsEndFallback, token.start + 1)
 }, {extend: true})
+
+export const maybeMacro = new ExternalTokenizer((input, token) => {
+  let pos = token.start, sawLetter = false
+  for (;; pos++) {
+    let next = input.get(pos)
+    if (next >= A && next <= Z) sawLetter = true
+    else if (next != Underscore) break
+  }
+  if (sawLetter) token.accept(MacroName, pos)
+}, {fallback: true})
