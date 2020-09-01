@@ -666,3 +666,32 @@ Program(
         Identifier,
         Identifier))))
 
+# Reference arg
+
+void x() {
+  x_->Y(A(this, &B::C<D, 2>));
+}
+
+==>
+
+Program(FunctionDefinition(PrimitiveType, FunctionDeclarator(Identifier, ParameterList), CompoundStatement(
+  ExpressionStatement(CallExpression(FieldExpression(Identifier, FieldIdentifier), ArgumentList(
+    CallExpression(Identifier, ArgumentList(
+      this,
+      PointerExpression(TemplateFunction(
+        ScopedIdentifier(NamespaceIdentifier, Identifier),
+        TemplateArgumentList(TypeDescriptor(TypeIdentifier), Number)))))))))))
+
+# Numbers
+
+void f() {
+  return 2 + 2.5 + 2u + 2ul + 2uLl + 4e-10;
+}
+
+==>
+
+Program(FunctionDefinition(PrimitiveType,FunctionDeclarator(Identifier,ParameterList()),CompoundStatement(
+  ReturnStatement(return,BinaryExpression(
+    BinaryExpression(BinaryExpression(
+      BinaryExpression(BinaryExpression(BinaryExpression(Number,ArithOp,Number),ArithOp,Number),ArithOp,Number),
+      ArithOp,Number),ArithOp,Number),ArithOp,Number)))))

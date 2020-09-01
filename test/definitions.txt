@@ -20,6 +20,18 @@ Program(
       const),
     CompoundStatement(ReturnStatement(return, Number))))
 
+# Vararg definition
+
+int emit(int... s) {
+}
+
+==>
+
+Program(
+  FunctionDefinition(PrimitiveType,FunctionDeclarator(
+    Identifier,
+    ParameterList(VariadicParameterDeclaration(PrimitiveType,VariadicDeclarator(Identifier)))),
+    CompoundStatement))
 
 # Constructor definitions
 
@@ -156,3 +168,28 @@ Program(
       ScopedIdentifier(NamespaceIdentifier, DestructorName), ParameterList),
     CompoundStatement))
 
+# Inline template function
+
+template <typename X>
+inline void Foo(X* x) {
+  for (typename X::iterator it = x->begin();
+    it != x->end(); ++it)
+    Bar(&(*it));
+}
+
+==>
+
+Program(TemplateDeclaration(
+  template,TemplateParameterList(TypeParameterDeclaration(typename,TypeIdentifier)),
+  FunctionDefinition(inline,PrimitiveType,
+    FunctionDeclarator(Identifier,ParameterList(ParameterDeclaration(TypeIdentifier,PointerDeclarator(Identifier)))),
+    CompoundStatement(
+      ForStatement(
+        for,
+        Declaration(
+          DependentType(typename,ScopedTypeIdentifier(NamespaceIdentifier,TypeIdentifier)),
+          InitDeclarator(Identifier,CallExpression(FieldExpression(Identifier,FieldIdentifier),ArgumentList))),
+        BinaryExpression(Identifier,CompareOp,CallExpression(FieldExpression(Identifier,FieldIdentifier),ArgumentList)),
+        UpdateExpression(Identifier),
+        ExpressionStatement(CallExpression(Identifier,ArgumentList(
+          PointerExpression(ParenthesizedExpression(PointerExpression(Identifier)))))))))))

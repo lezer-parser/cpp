@@ -239,6 +239,39 @@ Program(
       ParameterDeclaration(PrimitiveType)))),
     Declaration(FunctionDeclarator(DestructorName, ParameterList)))))
 
+# Forward class declaration
+
+class Foo;
+
+==>
+
+Program(ClassSpecifier(class,TypeIdentifier))
+
+# Forward function declarations
+
+void foo(Bar& x, Bar& y) noexcept;
+
+void Foo(const unsigned char* in_bytes, char* out);
+
+foo::bar();
+
+void foo(::y data, void* arg, void (*r)(void*));
+
+==>
+
+Program(
+  Declaration(PrimitiveType,FunctionDeclarator(Identifier,ParameterList(
+    ParameterDeclaration(TypeIdentifier,ReferenceDeclarator(Identifier)),
+    ParameterDeclaration(TypeIdentifier,ReferenceDeclarator(Identifier))), Noexcept(noexcept))),
+  Declaration(PrimitiveType,FunctionDeclarator(Identifier,ParameterList(
+    ParameterDeclaration(const,SizedTypeSpecifier(TypeSize,PrimitiveType),PointerDeclarator(Identifier)),
+    ParameterDeclaration(PrimitiveType,PointerDeclarator(Identifier))))),
+  ExpressionStatement(CallExpression(ScopedIdentifier(NamespaceIdentifier,Identifier),ArgumentList))
+  Declaration(PrimitiveType,FunctionDeclarator(Identifier,ParameterList(
+    ParameterDeclaration(ScopedTypeIdentifier(TypeIdentifier),Identifier),
+    ParameterDeclaration(PrimitiveType,PointerDeclarator(Identifier)),
+    ParameterDeclaration(PrimitiveType,FunctionDeclarator(ParenthesizedDeclarator(
+      PointerDeclarator(Identifier)),ParameterList(ParameterDeclaration(PrimitiveType,AbstractPointerDeclarator))))))))
 
 # Classes with inheritance
 
@@ -310,6 +343,30 @@ Program(
     FieldDeclaration(
       TypeIdentifier, FieldIdentifier, FieldIdentifier))))
 
+# Macro noise
+
+class Z {
+  int num_to_block_ GUARDED_BY("foo" ++ lock_);
+
+  MOCK_METHOD3(DoFoo, bool(const ns::Something&,
+                           const std::vector<int>&, const string));
+};
+SOME_OTHER_MACRO(2.44e3);
+
+==>
+
+Program(
+  ClassSpecifier(class,TypeIdentifier,FieldDeclarationList(
+    FieldDeclaration(PrimitiveType,FieldIdentifier(Macro(MacroName,ArgumentList(BinaryExpression(String,Identifier))))),
+    Declaration(FunctionDeclarator(Identifier,ParameterList(
+      ParameterDeclaration(TypeIdentifier),
+      ParameterDeclaration(PrimitiveType,AbstractFunctionDeclarator(ParameterList(
+        ParameterDeclaration(const,ScopedTypeIdentifier(NamespaceIdentifier,TypeIdentifier),AbstractReferenceDeclarator),
+        ParameterDeclaration(const,TemplateType(
+          ScopedTypeIdentifier(NamespaceIdentifier,TypeIdentifier),
+          TemplateArgumentList(TypeDescriptor(PrimitiveType))),AbstractReferenceDeclarator),
+        ParameterDeclaration(const,TypeIdentifier))))))))),
+  ExpressionStatement(CallExpression(Identifier,ArgumentList(Number))))
 
 # Friend declarations
 

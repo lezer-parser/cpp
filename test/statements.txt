@@ -279,3 +279,28 @@ Program(
         NamespaceIdentifier),
       Number)))
 
+# Switch statement
+
+string xyzzy(Bar s) {
+  switch (s) {
+    case Bar::OK:
+      return "OK";
+    case Bar::NotOK:
+      return "NOT OK";
+    default:
+      return "AHA";
+  }
+}
+
+==>
+
+Program(FunctionDefinition(TypeIdentifier,FunctionDeclarator(
+  Identifier,
+  ParameterList(ParameterDeclaration(TypeIdentifier,Identifier))),
+  CompoundStatement(
+    SwitchStatement(switch,ConditionClause(Identifier),CompoundStatement(
+      CaseStatement(case,ScopedIdentifier(NamespaceIdentifier,Identifier),
+        ReturnStatement(return,String)),
+      CaseStatement(case,ScopedIdentifier(NamespaceIdentifier,Identifier),
+        ReturnStatement(return,String)),
+      CaseStatement(default,ReturnStatement(return,String)))))))
