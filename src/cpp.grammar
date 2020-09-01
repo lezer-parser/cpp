@@ -28,7 +28,6 @@
   else @right
   caseLabel
   simpleTypeIdentifier
-  reference
   qualifiers
   statement
   pack
@@ -130,8 +129,8 @@ declarator {
     "(" declarator ")"
   } |
   Identifier ~identifier |
-  ReferenceDeclarator {
-    ("&" | "&&") !reference declarator
+  ReferenceDeclarator[dynamicPrecedence=1] {
+    ("&" | "&&") declarator
   } |
   ScopedIdentifier ~identifier |
   TemplateFunction ~identifier |
@@ -161,7 +160,7 @@ fieldDeclarator {
     "(" fieldDeclarator ")"
   } |
   FieldIdentifier |
-  ReferenceDeclarator {
+  ReferenceDeclarator[dynamicPrecedence=1] {
     ("&" | "&&") fieldDeclarator
   } |
   TemplateMethod |
@@ -169,10 +168,18 @@ fieldDeclarator {
 }
 
 typeDeclarator {
-  PointerDeclarator { PointerTypeDeclarator } |
-  FunctionDeclarator { FunctionTypeDeclarator } |
-  ArrayDeclarator { ArrayTypeDeclarator } |
-  ParenthesizedDeclarator[dynamicPrecedence=-10] { ParenthesizedTypeDeclarator } |
+  PointerDeclarator[dynamicPrecedence=1] {
+    MsBasedModifier? "*" msPointerModifier* typeQualifier* typeDeclarator
+  } |
+  FunctionDeclarator {
+    typeDeclarator !params ParameterList
+  } |
+  ArrayDeclarator {
+    typeDeclarator !array "[" typeQualifier* (expression | "*")? "]"
+  } |
+  ParenthesizedDeclarator[dynamicPrecedence=-10] {
+    "(" typeDeclarator ")"
+  } |
   TypeIdentifier
 }
 
@@ -188,28 +195,12 @@ abstractDeclarator {
     "(" abstractDeclarator ")"
   } |
   AbstractReferenceDeclarator {
-    ("&" | "&&") (!reference abstractDeclarator)?
+    ("&" | "&&") abstractDeclarator?
   }
-}
-
-ParenthesizedTypeDeclarator {
-  "(" typeDeclarator ")"
-}
-
-PointerTypeDeclarator {
-  MsBasedModifier? "*" msPointerModifier* typeQualifier* typeDeclarator
-}
-
-FunctionTypeDeclarator {
-  typeDeclarator !params ParameterList
 }
 
 AbstractFunctionDeclarator {
   abstractDeclarator? !params ParameterList (typeQualifier | Noexcept | ThrowSpecifier)* !return TrailingReturnType?
-}
-
-ArrayTypeDeclarator {
-  typeDeclarator !array "[" typeQualifier* (expression | "*")? "]"
 }
 
 InitDeclarator {
@@ -244,7 +235,7 @@ typeSpecifier {
   ClassSpecifier {
     kw<"class"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
   } |
-  DependentType {
+  DependentType[dynamicPrecedence=-1] {
     kw<"typename"> typeSpecifier
   } |
   Decltype {
@@ -270,7 +261,10 @@ FieldDeclarationList {
 }
 
 fieldDeclarationListItem {
-  FieldDeclaration |
+  FieldDeclaration {
+    Attribute* kw<"virtual">? declarationSpecifiers (fieldDeclarator ("," fieldDeclarator)*)?
+    (BitfieldClause | InitializerList | "=" (expression | InitializerList))? ";"
+  } |
   TemplateDeclaration |
   FunctionDefinition {
     Attribute* kw<"virtual">? declarationSpecifiers
@@ -288,10 +282,6 @@ fieldDeclarationListItem {
   UsingDeclaration |
   TypeDefinition |
   StaticAssertDeclaration
-}
-
-FieldDeclaration {
-  Attribute* kw<"virtual">? declarationSpecifiers commaSep<fieldDeclarator> (BitfieldClause | InitializerList | "=" (expression | InitializerList))? ";"
 }
 
 BitfieldClause {
@@ -593,31 +583,32 @@ TemplateInstantiation {
 }
 
 TemplateParameterList {
-  "<" commaSep<
-    ParameterDeclaration |
-    OptionalParameterDeclaration |
-    TypeParameterDeclaration |
-    VariadicParameterDeclaration |
-    VariadicTypeParameterDeclaration |
-    OptionalTypeParameterDeclaration |
-    TemplateTemplateParameterDeclaration
-  > templateArgEnd
+  templateArgStart commaSep<templateParameter> templateArgEnd
+}
+
+templateParameter {
+  ParameterDeclaration |
+  OptionalParameterDeclaration |
+  TypeParameterDeclaration |
+  VariadicParameterDeclaration |
+  OptionalTypeParameterDeclaration |
+  VariadicTypeParameterDeclaration |
+  TemplateTemplateParameterDeclaration {
+    kw<"template"> TemplateParameterList
+    (TypeParameterDeclaration | VariadicTypeParameterDeclaration | OptionalTypeParameterDeclaration)
+  }
 }
 
 TypeParameterDeclaration {
-  (kw<"typename"> | kw<"class">) !typeIdentifier TypeIdentifier?
-}
-
-VariadicTypeParameterDeclaration {
-  (kw<"typename"> | kw<"class">) "..." !typeIdentifier TypeIdentifier?
+  (kw<"typename"> | kw<"class">) !typeIdentifier TypeIdentifier? !typeIdentifier
 }
 
 OptionalTypeParameterDeclaration {
-  (kw<"typename"> | kw<"class">) TypeIdentifier? "=" typeSpecifier
+  (kw<"typename"> | kw<"class">) TypeIdentifier? !typeIdentifier "=" typeSpecifier
 }
 
-TemplateTemplateParameterDeclaration {
-  kw<"template"> TemplateParameterList (TypeParameterDeclaration | VariadicTypeParameterDeclaration | OptionalTypeParameterDeclaration)
+VariadicTypeParameterDeclaration {
+  (kw<"typename"> | kw<"class">) "..." !typeIdentifier TypeIdentifier? !typeIdentifier
 }
 
 OptionalParameterDeclaration {
@@ -691,7 +682,7 @@ ThrowSpecifier {
 }
 
 TemplateType {
-  (TypeIdentifier | ScopedTypeIdentifier) ~identifier ~lessThan !greaterLess TemplateArgumentList
+  (TypeIdentifier | ScopedTypeIdentifier) ~identifier ~lessThan TemplateArgumentList
 }
 
 TemplateMethod {
@@ -703,7 +694,7 @@ TemplateFunction {
 }
 
 TemplateArgumentList {
-  "<" commaSep<
+  templateArgStart commaSep<
     [dynamicPrecedence=3] { TypeDescriptor } |
     ParameterPackExpansion[dynamicPrecedence=2] { TypeDescriptor "..." } |
     [dynamicPrecedence=1] { expression }
@@ -826,6 +817,8 @@ commaSep1<term> { term ("," term)* }
 
 commaSepTrailing<term> { "" | term ("," term?)* }
 
+templateArgStart { @extend[name="<"]<"<"> }
+
 @skip { whitespace | LineComment | BlockComment | PreprocDirective }
 
 @external tokens rawString from "./tokens" { rawStringStart }
@@ -924,7 +917,7 @@ commaSepTrailing<term> { "" | term ("," term?)* }
   stringLiteralContent { ![\\\n"]+ }
 
   // Specified separately so that it can override ">>"
-  templateArgEnd[name="\">\""] { ">" }
+  templateArgEnd[name=">"] { ">" }
 
   @precedence { templateArgEnd, BitOp<"<<" | ">>">, ">" }
 
