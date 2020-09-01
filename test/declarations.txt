@@ -107,7 +107,7 @@ Program(
       ParameterList(ParameterDeclaration(TypeIdentifier, ReferenceDeclarator(Identifier)))),
     CompoundStatement(
       Declaration(
-        TypeQualifier,
+        const,
         TypeIdentifier,
         InitDeclarator(ReferenceDeclarator(Identifier), Identifier)))))
 
@@ -135,7 +135,7 @@ Program(
     AccessSpecifier(Access),
     FunctionDefinition(
       PrimitiveType,
-      FunctionDeclarator(FieldIdentifier, ParameterList, TypeQualifier),
+      FunctionDeclarator(FieldIdentifier, ParameterList, const),
       CompoundStatement(ReturnStatement(return, Identifier))))))
 
 
@@ -164,19 +164,19 @@ Program(
       CompoundStatement(ReturnStatement(return, Number))),
     FunctionDefinition(
       PrimitiveType,
-      FunctionDeclarator(FieldIdentifier, ParameterList, TypeQualifier, VirtualSpecifier),
+      FunctionDeclarator(FieldIdentifier, ParameterList, const, VirtualSpecifier),
       CompoundStatement(ReturnStatement(return, Number))),
     FunctionDefinition(
       PrimitiveType,
-      FunctionDeclarator(FieldIdentifier, ParameterList, TypeQualifier, VirtualSpecifier),
+      FunctionDeclarator(FieldIdentifier, ParameterList, const, VirtualSpecifier),
       CompoundStatement(ReturnStatement(return, Number))),
     FunctionDefinition(
       PrimitiveType,
-      FunctionDeclarator(FieldIdentifier, ParameterList, TypeQualifier, VirtualSpecifier, VirtualSpecifier),
+      FunctionDeclarator(FieldIdentifier, ParameterList, const, VirtualSpecifier, VirtualSpecifier),
       CompoundStatement(ReturnStatement(return, Number))),
     FunctionDefinition(
       PrimitiveType,
-      FunctionDeclarator(FieldIdentifier, ParameterList, TypeQualifier, VirtualSpecifier, VirtualSpecifier),
+      FunctionDeclarator(FieldIdentifier, ParameterList, const, VirtualSpecifier, VirtualSpecifier),
       CompoundStatement(ReturnStatement(return, Number))))))
 
 
@@ -399,7 +399,7 @@ Program(
     Attribute(ScopedIdentifier(NamespaceIdentifier, Identifier)),
     Attribute(ScopedIdentifier(NamespaceIdentifier, Identifier)),
     Attribute(Identifier),
-    StorageClassSpecifier,
+    inline,
     PrimitiveType,
     FunctionDeclarator(Identifier, ParameterList)))
 
@@ -420,14 +420,14 @@ Program(
         OperatorName,
         ParameterList(
           ParameterDeclaration(TypeIdentifier, AbstractReferenceDeclarator),
-          ParameterDeclaration(TypeQualifier, TypeIdentifier, ReferenceDeclarator(Identifier)))))),
+          ParameterDeclaration(const, TypeIdentifier, ReferenceDeclarator(Identifier)))))),
   Declaration(
     PrimitiveType,
     FunctionDeclarator(
       ScopedIdentifier(NamespaceIdentifier, OperatorName),
       ParameterList(
-        ParameterDeclaration(TypeQualifier, TypeIdentifier, ReferenceDeclarator(Identifier))),
-      TypeQualifier)))
+        ParameterDeclaration(const, TypeIdentifier, ReferenceDeclarator(Identifier))),
+      const)))
 
 
 # Template declarations
@@ -810,13 +810,13 @@ Program(
               Identifier),
             ArgumentList(Identifier)))),
       Declaration(
-        TypeQualifier,
+        const,
         auto,
         InitDeclarator(
           StructuredBindingDeclarator(Identifier, Identifier),
           InitializerList(Number, Number))),
       ForRangeLoop(for,
-        TypeQualifier,
+        const,
         auto,
         ReferenceDeclarator(StructuredBindingDeclarator(
           Identifier,
@@ -833,7 +833,7 @@ constexpr double pi = 3.14159;
 
 Program(
   Declaration(
-    TypeQualifier,
+    constexpr,
     PrimitiveType,
     InitDeclarator(
       Identifier,
@@ -991,12 +991,12 @@ Program(
   Declaration(
     OperatorCast(operator,
       PrimitiveType,
-      AbstractFunctionDeclarator(ParameterList, TypeQualifier))),
+      AbstractFunctionDeclarator(ParameterList, const))),
   Declaration(
     ExplicitFunctionSpecifier(explicit),
     OperatorCast(operator,
       PrimitiveType,
-      AbstractPointerDeclarator(AbstractFunctionDeclarator(ParameterList, TypeQualifier)))),
+      AbstractPointerDeclarator(AbstractFunctionDeclarator(ParameterList, const)))),
   Declaration(
     OperatorCast(operator,
       TypeIdentifier,
@@ -1007,7 +1007,7 @@ Program(
   Declaration(
     OperatorCast(operator,
       auto,
-      AbstractFunctionDeclarator(ParameterList, TypeQualifier))),
+      AbstractFunctionDeclarator(ParameterList, const))),
   Declaration(
     virtual,
     OperatorCast(operator, TypeIdentifier, AbstractFunctionDeclarator(ParameterList)), Number),

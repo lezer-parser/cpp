@@ -213,13 +213,11 @@ CompoundStatement {
 }
 
 storageClassSpecifier {
-  @specialize[name=StorageClassSpecifier]<identifier,
-    "extern" | "static" | "register" | "inline">
+  kw<"extern"> | kw<"static"> | kw<"register"> | kw<"inline">
 }
 
 typeQualifier {
-  @specialize[name=TypeQualifier]<identifier,
-    "const" | "volatile" | "restrict" | "_Atomic" | "mutable" | "constexpr">
+  kw<"const"> | kw<"volatile"> | kw<"restrict"> | kw<"_Atomic"> | kw<"mutable"> | kw<"constexpr">
 }
 
 typeSpecifier {
@@ -721,11 +719,10 @@ StaticAssertDeclaration {
 }
 
 ConditionClause {
-  "(" ((Declaration | ExpressionStatement)? (expression | CommaExpression) | Declaration { ConditionDeclaration }) ")"
-}
-
-ConditionDeclaration {
-  declarationSpecifiers declarator ("=" expression | InitializerList)
+  "(" (
+    (Declaration | ExpressionStatement)? (expression | CommaExpression) |
+    Declaration { declarationSpecifiers declarator ("=" expression | InitializerList) }
+  ) ")"
 }
 
 ForRangeLoop {

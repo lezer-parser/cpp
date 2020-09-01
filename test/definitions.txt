@@ -17,7 +17,7 @@ Program(
     FunctionDeclarator(
       ScopedIdentifier(NamespaceIdentifier, Identifier),
       ParameterList,
-      TypeQualifier),
+      const),
     CompoundStatement(ReturnStatement(return, Number))))
 
 
@@ -129,7 +129,7 @@ Program(
         ReferenceDeclarator(
           FunctionDeclarator(
             OperatorName,
-            ParameterList(ParameterDeclaration(TypeQualifier, TypeIdentifier, AbstractReferenceDeclarator)))),
+            ParameterList(ParameterDeclaration(const, TypeIdentifier, AbstractReferenceDeclarator)))),
         DefaultMethodClause(default)),
       FunctionDefinition(
         TypeIdentifier,
