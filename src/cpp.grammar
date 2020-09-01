@@ -240,9 +240,10 @@ typeSpecifier {
     kw<"decltype"> "(" expression ")"
   } |
   SizedTypeSpecifier |
-  primitiveType |
+  primitiveType ~afterPrimitive |
   kw<"auto"> |
-  (ScopedTypeIdentifier !simpleTypeIdentifier | TypeIdentifier !simpleTypeIdentifier) |
+  ScopedTypeIdentifier !simpleTypeIdentifier |
+  TypeIdentifier !simpleTypeIdentifier |
   TemplateType
 }
 
@@ -475,7 +476,7 @@ SubscriptExpression {
 
 CallExpression {
   expression !arguments ArgumentList |
-  primitiveType !arguments ArgumentList
+  primitiveType ~afterPrimitive ArgumentList
 }
 
 ArgumentList {
@@ -823,7 +824,7 @@ commaSep1<term> { term ("," term)* }
 
 commaSepTrailing<term> { "" | term ("," term?)* }
 
-templateArgStart { @extend[name="<"]<"<"> }
+templateArgStart { @extend[name="<"]<"<"> } // FIXME name the compare ops CompareOp
 
 @skip { whitespace | LineComment | BlockComment | PreprocDirective }
 
