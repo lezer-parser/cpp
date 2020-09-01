@@ -525,7 +525,7 @@ FieldDesignator {
     stringLiteralStart (stringLiteralContent | EscapeSequence)* stringLiteralEnd
   }
 
-  Macro { MacroName (whitespace? ArgumentList?) }
+  Macro[dynamicPrecedence=-1] { MacroName (whitespace? ArgumentList?) }
 }
 
 ConcatenatedString {
@@ -549,7 +549,7 @@ Identifier {
 }
 
 emptyDeclaration {
-  typeSpecifier ";"
+  Attribute* typeSpecifier ";"
 }
 
 className {
@@ -748,7 +748,22 @@ CatchClause {
 }
 
 Attribute {
-  "[[" commaSep1<expression> "]]"
+  "[[" commaSep<AttributeName AttributeArgs { "(" balancedTokens* ")" }?> "..."? "]]"
+}
+
+AttributeName { attributeIdentifier ("::" attributeIdentifier)* }
+
+balancedTokens {
+  "{" balancedTokens* "}" |
+  "[" balancedTokens* "]" |
+  "(" balancedTokens* ")" |
+  attributeIdentifier |
+  "++" | "--" | ArithOp<"+" | "-"> | ArithOp { "*" } | ArithOp<"/" | "%"> | LogicOp { "||" | "&&" } |
+  BitOp<"|"> | BitOp<"^"> | BitOp { "&" } | CompareOp<"==" | "!="> | CompareOp<"<=" | ">="> |
+  @extend[name=CompareOp]<"<"> | @extend[name=CompareOp]<templateArgsEnd, ">"> | BitOp<"<<" | ">>"> |
+  UpdateOp |
+  ";" | ":" | "," | "..." | "::" | "." | "->" |
+  Number | String | RawString | CharLiteral
 }
 
 NewExpression {
@@ -835,7 +850,7 @@ commaSepTrailing<term> { "" | term ("," term?)* }
 
 @external tokens rawStringContinue from "./tokens" { rawStringContent, rawStringEnd }
 
-@external tokens closeTemplateFallback from "./tokens" { templateArgsEndFallback[name=">"] }
+@external tokens fallback from "./tokens" { templateArgsEndFallback[name=">"], MacroName }
 
 @tokens {
   whitespace {
@@ -884,6 +899,8 @@ commaSepTrailing<term> { "" | term ("," term?)* }
 
   scopedIdentifier { identifier }
 
+  attributeIdentifier[name=Identifier] { identifier }
+
   DestructorName {
     "~" $[ \t]* identifier
   }
@@ -906,6 +923,7 @@ commaSepTrailing<term> { "" | term ("," term?)* }
 
   @precedence { OperatorName, identifier }
   @precedence { OperatorName, scopedIdentifier }
+  @precedence { OperatorName }
 
   ArithOp<expr> { expr }
 
@@ -937,6 +955,5 @@ commaSepTrailing<term> { "" | term ("," term?)* }
   "," "<" "::"
 
   @precedence { stringLiteralStart, charLiteralStart, identifier }
+  @precedence { stringLiteralStart, charLiteralStart, attributeIdentifier }
 }
-
-@external tokens maybeMacro from "./tokens" { MacroName }

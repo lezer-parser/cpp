@@ -352,6 +352,7 @@ class Z {
                            const std::vector<int>&, const string));
 };
 SOME_OTHER_MACRO(2.44e3);
+int z MACRO() = 0;
 
 ==>
 
@@ -366,7 +367,8 @@ Program(
           ScopedTypeIdentifier(NamespaceIdentifier,TypeIdentifier),
           TemplateArgumentList(TypeDescriptor(PrimitiveType))),AbstractReferenceDeclarator),
         ParameterDeclaration(const,TypeIdentifier))))))))),
-  ExpressionStatement(CallExpression(Identifier,ArgumentList(Number))))
+  ExpressionStatement(CallExpression(Identifier,ArgumentList(Number))),
+  Declaration(PrimitiveType,InitDeclarator(Identifier(Macro(MacroName,ArgumentList)),Number)))
 
 # Friend declarations
 
@@ -429,12 +431,15 @@ Program(
     CompoundStatement))
 
 
-# Functions with attributes
+# Declarations with attributes
 
 int f([[a::b(c), d]] int x) {}
 
 [[gnu::always_inline]] [[gnu::hot]] [[gnu::const]] [[nodiscard]]
 inline int g();
+
+[[ foo::target(gpu, [cpu]) ]]
+class Foo;
 
 ==>
 
@@ -445,21 +450,20 @@ Program(
       Identifier,
       ParameterList(
         ParameterDeclaration(
-          Attribute(
-            CallExpression(ScopedIdentifier(NamespaceIdentifier, Identifier), ArgumentList(Identifier)),
-            Identifier),
+          Attribute(AttributeName(Identifier,Identifier),AttributeArgs(Identifier),AttributeName(Identifier))
           PrimitiveType,
           Identifier))),
     CompoundStatement),
   Declaration(
-    Attribute(ScopedIdentifier(NamespaceIdentifier, Identifier)),
-    Attribute(ScopedIdentifier(NamespaceIdentifier, Identifier)),
-    Attribute(ScopedIdentifier(NamespaceIdentifier, Identifier)),
-    Attribute(Identifier),
+    Attribute(AttributeName(Identifier,Identifier))
+    Attribute(AttributeName(Identifier,Identifier))
+    Attribute(AttributeName(Identifier,Identifier))
+    Attribute(AttributeName(Identifier))
     inline,
     PrimitiveType,
-    FunctionDeclarator(Identifier, ParameterList)))
-
+    FunctionDeclarator(Identifier, ParameterList)),
+  Attribute(AttributeName(Identifier,Identifier),AttributeArgs(Identifier,Identifier)),
+  ClassSpecifier(class,TypeIdentifier))
 
 # Operator overload declarations
 
