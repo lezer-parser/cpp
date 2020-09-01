@@ -86,7 +86,12 @@ TypeDefinition {
 }
 
 declarationSpecifiers {
-  (storageClassSpecifier | typeQualifier | AttributeSpecifier | MsDeclspecModifier)* ~specifiers typeSpecifier (storageClassSpecifier | typeQualifier | AttributeSpecifier | MsDeclspecModifier)*
+  (storageClassSpecifier | typeQualifier | AttributeSpecifier | MsDeclspecModifier)* ~specifiers typeSpecifier (
+    storageClassSpecifier |
+    typeQualifier |
+    AttributeSpecifier |
+    MsDeclspecModifier
+  )*
 }
 
 LinkageSpecification {
@@ -416,19 +421,14 @@ ConditionalExpression {
   expression !ternary "?" expression ":" expression
 }
 
-assignmentLeftExpression {
+AssignmentExpression {
   (Identifier |
    CallExpression |
    FieldExpression |
    PointerExpression |
    SubscriptExpression |
    ParenthesizedExpression |
-   ScopedNamespaceIdentifier)
-  !assign // FIXME why is this necessary?
-}
-
-AssignmentExpression {
-  assignmentLeftExpression !assign (UpdateOp | "=") expression
+   ScopedNamespaceIdentifier) !assign (UpdateOp | "=") expression
 }
 
 PointerExpression {
@@ -525,7 +525,7 @@ FieldDesignator {
     stringLiteralStart (stringLiteralContent | EscapeSequence)* stringLiteralEnd
   }
 
-  Macro[dynamicPrecedence=-1] { MacroName (whitespace? ArgumentList?) }
+  Macro[dynamicPrecedence=-10] { MacroName (whitespace? ArgumentList?) }
 }
 
 ConcatenatedString {
@@ -657,7 +657,12 @@ operatorCastDeclaration {
 }
 
 constructorOrDestructorDefinition {
-  (storageClassSpecifier | typeQualifier | AttributeSpecifier)* ~specifiers (kw<"virtual"> | ExplicitFunctionSpecifier)? FunctionDeclarator FieldInitializerList? (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
+  (storageClassSpecifier | typeQualifier | AttributeSpecifier)*
+  ~specifiers
+  (kw<"virtual"> | ExplicitFunctionSpecifier)?
+  FunctionDeclarator
+  FieldInitializerList?
+  (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
 DefaultMethodClause {
@@ -874,7 +879,13 @@ commaSepTrailing<term> { "" | term ("," term?)* }
   @precedence { "(", PreprocArg, ppSpace }
 
   Number {
-    ("0x" | "0b")? (($[0-9]+ ("'" $[0-9]+)* | "0b" $[0-9]+ ("'" $[0-9]+)* | "0x" $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*) ("." ($[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? | "." $[0-9]+ ("'" $[0-9]+)*) ($[eEpP] ($[-\+]? $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? ("u" | "l" | "U" | "L" | "f" | "F")*
+    ("0x" | "0b")?
+    (($[0-9]+ ("'" $[0-9]+)* |
+     "0b" $[0-9]+ ("'" $[0-9]+)* |
+     "0x" $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)
+     ("." ($[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? |
+     "." $[0-9]+ ("'" $[0-9]+)*)
+    ($[eEpP] ($[-\+]? $[0-9a-fA-F]+ ("'" $[0-9a-fA-F]+)*)?)? ("u" | "l" | "U" | "L" | "f" | "F")*
   }
 
   @precedence { Number, "." }

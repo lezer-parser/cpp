@@ -1078,3 +1078,19 @@ Program(
       operator,
       TypeIdentifier, AbstractFunctionDeclarator(ParameterList))))
 
+# Restrict
+
+int* restrict baz;
+
+==>
+
+Program(Declaration(PrimitiveType,PointerDeclarator(restrict,Identifier)))
+
+# Ignored args
+
+void def(const char* msg, ...);
+
+==>
+
+Program(Declaration(PrimitiveType,FunctionDeclarator(Identifier,ParameterList(
+  ParameterDeclaration(const,PrimitiveType,PointerDeclarator(Identifier))))))

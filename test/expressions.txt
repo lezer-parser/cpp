@@ -695,3 +695,18 @@ Program(FunctionDefinition(PrimitiveType,FunctionDeclarator(Identifier,Parameter
     BinaryExpression(BinaryExpression(
       BinaryExpression(BinaryExpression(BinaryExpression(Number,ArithOp,Number),ArithOp,Number),ArithOp,Number),
       ArithOp,Number),ArithOp,Number),ArithOp,Number)))))
+
+# Initializer list
+
+Bar({
+  .a = a, 
+  .b = b.Bar(), 
+  .c = c->Baz
+});
+
+==>
+
+Program(ExpressionStatement(CallExpression(Identifier,ArgumentList(InitializerList(
+  InitializerPair(FieldDesignator(FieldIdentifier),Identifier),
+  InitializerPair(FieldDesignator(FieldIdentifier),CallExpression(FieldExpression(Identifier,FieldIdentifier),ArgumentList)),
+  InitializerPair(FieldDesignator(FieldIdentifier),FieldExpression(Identifier,FieldIdentifier)))))))

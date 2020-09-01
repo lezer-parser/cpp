@@ -304,3 +304,16 @@ Program(FunctionDefinition(TypeIdentifier,FunctionDeclarator(
       CaseStatement(case,ScopedIdentifier(NamespaceIdentifier,Identifier),
         ReturnStatement(return,String)),
       CaseStatement(default,ReturnStatement(return,String)))))))
+
+# For loop
+
+for (int x = 1; x < 5; x++, y++) {
+}
+
+==>
+
+Program(ForStatement(for,
+  Declaration(PrimitiveType,InitDeclarator(Identifier,Number)),
+  BinaryExpression(Identifier,CompareOp,Number),
+  CommaExpression(UpdateExpression(Identifier),UpdateExpression(Identifier)),
+  CompoundStatement))
