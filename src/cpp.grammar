@@ -627,8 +627,8 @@ VariadicDeclarator {
 }
 
 OperatorCast {
-  ((NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? "::")?
-  kw<"operator"> declarationSpecifiers !cast abstractDeclarator
+  ((NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? "::" skw<"operator"> | kw<"operator">)
+  declarationSpecifiers !cast abstractDeclarator
 }
 
 FieldInitializerList {
@@ -746,7 +746,7 @@ Attribute {
 }
 
 NewExpression {
-  "::"? kw<"new"> ArgumentList? typeSpecifier (!more NewDeclarator)? (!arguments (ArgumentList | InitializerList))?
+  ("::" skw<"new"> | kw<"new">) ArgumentList? typeSpecifier (!more NewDeclarator)? (!arguments (ArgumentList | InitializerList))?
 }
 
 NewDeclarator {
@@ -754,7 +754,7 @@ NewDeclarator {
 }
 
 DeleteExpression {
-  "::"? kw<"delete"> (!more "[" "]")? expression
+  ("::" skw<"delete"> | kw<"delete">) (!more "[" "]")? expression
 }
 
 LambdaExpression {
@@ -774,19 +774,23 @@ ParameterPackExpansion {
 }
 
 ScopedFieldIdentifier {
-  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace "::" (FieldIdentifier | OperatorName | DestructorName)
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace
+  "::" (FieldIdentifier { scopedIdentifier } | OperatorName | DestructorName)
 }
 
 ScopedIdentifier {
-  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace "::" (Identifier | OperatorName | DestructorName)
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace
+  "::" (Identifier { scopedIdentifier } | OperatorName | DestructorName)
 }
 
 ScopedTypeIdentifier {
-  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace "::" TypeIdentifier
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace
+  "::" TypeIdentifier { scopedIdentifier }
 }
 
 ScopedNamespaceIdentifier {
-  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace "::" NamespaceIdentifier
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace
+  "::" NamespaceIdentifier { scopedIdentifier !namespace }
 }
 
 NamespaceIdentifier {
@@ -810,6 +814,8 @@ primitiveType {
 RawString { rawStringStart rawStringContent* rawStringEnd }
 
 kw<term> { @specialize[name={term}]<identifier, term> }
+
+skw<term> { @specialize[name={term}]<scopedIdentifier, term> }
 
 commaSep<term> { "" | term ("," term)* }
 
@@ -870,6 +876,8 @@ templateArgStart { @extend[name="<"]<"<"> }
     $[a-zA-Z_] $[a-zA-Z0-9_]*
   }
 
+  scopedIdentifier { identifier }
+
   DestructorName {
     "~" $[ \t]* identifier
   }
@@ -891,6 +899,7 @@ templateArgStart { @extend[name="<"]<"<"> }
   }
 
   @precedence { OperatorName, identifier }
+  @precedence { OperatorName, scopedIdentifier }
 
   ArithOp<expr> { expr }
 
