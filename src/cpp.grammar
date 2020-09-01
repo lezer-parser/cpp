@@ -248,8 +248,11 @@ typeSpecifier {
   TemplateType
 }
 
+// FIXME this used to allow arbitrary TypeNames as well as primitive
+// types, which I guess might be useful with preprocessor-defined
+// types, but requires even more GLR magic.
 SizedTypeSpecifier {
-  (kw<"signed"> | kw<"unsigned"> | kw<"long"> | kw<"short">)+ (!typeIdentifier TypeIdentifier | primitiveType)?
+  @extend[name=TypeSize]<identifier, "signed" | "unsigned" | "long" | "short">+ primitiveType?
 }
 
 EnumeratorList {

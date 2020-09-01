@@ -924,7 +924,7 @@ enum struct Foo : char { };
 Program(
   EnumSpecifier(enum, TypeIdentifier, PrimitiveType, EnumeratorList),
   EnumSpecifier(enum, TypeIdentifier, TypeIdentifier, EnumeratorList),
-  EnumSpecifier(enum, TypeIdentifier, SizedTypeSpecifier(unsigned, PrimitiveType), EnumeratorList),
+  EnumSpecifier(enum, TypeIdentifier, SizedTypeSpecifier(TypeSize, PrimitiveType), EnumeratorList),
   EnumSpecifier(enum, EnumeratorList(Enumerator(Identifier), Enumerator(Identifier))),
   EnumSpecifier(enum, TypeIdentifier, ScopedTypeIdentifier(NamespaceIdentifier, TypeIdentifier), EnumeratorList),
   EnumSpecifier(enum, ScopedTypeIdentifier(NamespaceIdentifier, TypeIdentifier), ScopedTypeIdentifier(NamespaceIdentifier, TypeIdentifier), EnumeratorList),
