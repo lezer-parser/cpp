@@ -563,7 +563,7 @@ BaseClassClause {
 }
 
 enumBaseClause {
-  ":" !typeIdentifier (ScopedTypeIdentifier | TypeIdentifier | SizedTypeSpecifier)
+  ":" (ScopedTypeIdentifier | TypeIdentifier | SizedTypeSpecifier | primitiveType)
 }
 
 TemplateDeclaration {
