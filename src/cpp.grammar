@@ -63,7 +63,7 @@ topLevelItem {
     pp<"include"> (String | SystemLibString | Identifier ArgumentList?) "\n" |
     pp<"define"> Identifier preprocParams? PreprocArg "\n" |
     pp<"if"> PreprocArg "\n" |
-    pp<"ifdef" | "ifndef"> Identifier "\n" |
+    (pp<"ifdef"> | pp<"ifndef">) Identifier "\n" |
     pp<"else"> "\n" |
     pp<"endif"> "\n" |
     pp<"elif"> PreprocArg "\n" |
@@ -862,7 +862,7 @@ commaSepTrailing<term> { "" | term ("," term?)* }
     ($[ \t\r\n] | "\\" "\r"? "\n")+
   }
 
-  pp[name="#" name]<name> { "#" $[ \t]* name }
+  pp[name="#" {name}]<name> { "#" $[ \t]* name }
 
   PreprocDirectiveName {
     "#" $[ \t]* $[a-zA-Z] $[a-zA-Z0-9_]*
