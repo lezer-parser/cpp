@@ -358,7 +358,7 @@ int z MACRO() = 0;
 
 Program(
   ClassSpecifier(class,TypeIdentifier,FieldDeclarationList(
-    FieldDeclaration(PrimitiveType,FieldIdentifier(Macro(MacroName,ArgumentList(BinaryExpression(String,Identifier))))),
+    FieldDeclaration(PrimitiveType,FieldIdentifier(Macro(MacroName,ArgumentList(BinaryExpression(String,UpdateOp,Identifier))))),
     Declaration(FunctionDeclarator(Identifier,ParameterList(
       ParameterDeclaration(TypeIdentifier),
       ParameterDeclaration(PrimitiveType,AbstractFunctionDeclarator(ParameterList(

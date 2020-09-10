@@ -190,6 +190,6 @@ Program(TemplateDeclaration(
           DependentType(typename,ScopedTypeIdentifier(NamespaceIdentifier,TypeIdentifier)),
           InitDeclarator(Identifier,CallExpression(FieldExpression(Identifier,FieldIdentifier),ArgumentList))),
         BinaryExpression(Identifier,CompareOp,CallExpression(FieldExpression(Identifier,FieldIdentifier),ArgumentList)),
-        UpdateExpression(Identifier),
+        UpdateExpression(UpdateOp, Identifier),
         ExpressionStatement(CallExpression(Identifier,ArgumentList(
           PointerExpression(ParenthesizedExpression(PointerExpression(Identifier)))))))))))

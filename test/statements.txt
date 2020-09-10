@@ -315,5 +315,5 @@ for (int x = 1; x < 5; x++, y++) {
 Program(ForStatement(for,
   Declaration(PrimitiveType,InitDeclarator(Identifier,Number)),
   BinaryExpression(Identifier,CompareOp,Number),
-  CommaExpression(UpdateExpression(Identifier),UpdateExpression(Identifier)),
+  CommaExpression(UpdateExpression(Identifier, UpdateOp),UpdateExpression(Identifier, UpdateOp)),
   CompoundStatement))

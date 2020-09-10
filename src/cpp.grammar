@@ -453,11 +453,11 @@ BinaryExpression {
   expression !greaterLess
     (CompareOp<"<=" | ">="> | @extend[name=CompareOp]<"<"> | @extend[name=CompareOp]<templateArgsEnd, ">">) expression |
   expression !bitShift BitOp<"<<" | ">>"> expression |
-  expression !concat "++" expression
+  expression !concat incDec expression
 }
 
 UpdateExpression {
-  ("--" | "++") !prefix expression | expression !suffix ("--" | "++")
+  incDec !prefix expression | expression !suffix incDec
 }
 
 CastExpression {
@@ -763,7 +763,7 @@ balancedTokens {
   "[" balancedTokens* "]" |
   "(" balancedTokens* ")" |
   attributeIdentifier |
-  "++" | "--" | ArithOp<"+" | "-"> | ArithOp { "*" } | ArithOp<"/" | "%"> | LogicOp { "||" | "&&" } |
+  incDec | ArithOp<"+" | "-"> | ArithOp { "*" } | ArithOp<"/" | "%"> | LogicOp { "||" | "&&" } |
   BitOp<"|"> | BitOp<"^"> | BitOp { "&" } | CompareOp<"==" | "!="> | CompareOp<"<=" | ">="> |
   @extend[name=CompareOp]<"<"> | @extend[name=CompareOp]<templateArgsEnd, ">"> | BitOp<"<<" | ">>"> |
   UpdateOp |
@@ -947,6 +947,8 @@ commaSepTrailing<term> { "" | term ("," term?)* }
   UpdateOp {
     ($[*/%+\-&^|] | "<<" | ">>") "="
   }
+
+  incDec[name=UpdateOp] { "++" | "--" }
 
   charLiteralStart { "L'" | "u'" | "U'" | "u8'" | "'" }
 

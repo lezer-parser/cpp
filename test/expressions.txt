@@ -465,16 +465,14 @@ Program(
       ArgumentList(
         Identifier,
         ParameterPackExpansion(
-          UpdateExpression(
-            Identifier))))),
+          UpdateExpression(UpdateOp, Identifier))))),
   LineComment,
   ExpressionStatement(
     CallExpression(
       Identifier,
       ArgumentList(
         ParameterPackExpansion(
-          UpdateExpression(
-            Identifier)),
+          UpdateExpression(UpdateOp, Identifier)),
         Identifier))),
   LineComment,
   ExpressionStatement(
