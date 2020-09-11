@@ -871,7 +871,7 @@ commaSepTrailing<term> { "" | term ("," term?)* }
   @precedence { pp, PreprocDirectiveName }
 
   PreprocArg {
-    ![\n] | "\\\\" "\\r"? "\\n"+
+    (![\n] | "\\" "\r"? "\n")+
   }
 
   ppSpace { $[ \t]+ }
@@ -901,7 +901,7 @@ commaSepTrailing<term> { "" | term ("," term?)* }
   }
 
   SystemLibString {
-    "<" (![>\n] | "\\>")* ">"
+    "<" (![>\n\\] | "\\" _)* ">"
   }
 
   identifier {
