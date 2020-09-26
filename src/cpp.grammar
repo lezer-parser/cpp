@@ -2,6 +2,8 @@
   capture
   subscript
   arguments
+  typeSizeof
+  baseClass
   suffix @left
   prefix @left
   pointer @left
@@ -237,7 +239,8 @@ typeSpecifier {
     kw<"enum"> (kw<"class"> | kw<"struct">)? !structName (className enumBaseClause? EnumeratorList? | EnumeratorList)
   } |
   ClassSpecifier {
-    kw<"class"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
+    kw<"class"> MsDeclspecModifier? !structName
+    (className | className? virtualSpecifier? (!baseClass BaseClassClause)? FieldDeclarationList)
   } |
   DependentType[dynamicPrecedence=-1] {
     kw<"typename"> typeSpecifier
@@ -257,7 +260,7 @@ typeSpecifier {
 // types, which I guess might be useful with preprocessor-defined
 // types, but requires even more GLR magic.
 SizedTypeSpecifier {
-  @extend[name=TypeSize]<identifier, "signed" | "unsigned" | "long" | "short">+ primitiveType?
+  @specialize[name=TypeSize]<identifier, "signed" | "unsigned" | "long" | "short">+ primitiveType?
 }
 
 EnumeratorList {
@@ -469,7 +472,7 @@ TypeDescriptor {
 }
 
 SizeofExpression {
-  kw<"sizeof"> !sizeof (expression | "(" TypeDescriptor ")") |
+  kw<"sizeof"> !sizeof (expression | [dynamicPrecedence=1] { "(" !typeSizeof TypeDescriptor ")" }) |
   kw<"sizeof"> "..." "(" Identifier ")"
 }
 
