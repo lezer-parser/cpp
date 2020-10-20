@@ -113,12 +113,12 @@ MsBasedModifier {
 }
 
 msCallModifier {
-  @specialize[name=MsCallModifier]<identifier,
+  @specialize[@name=MsCallModifier]<identifier,
     "__cdecl" | "__clrcall" | "__stdcall" | "__fastcall" | "__thiscall" | "__vectorcall">
 }
 
 msPointerModifier {
-  @specialize[name=MsPointerModifier]<identifier, "__restrict" | "__uptr" | "__sptr" | "_unaligned" | "__unaligned">
+  @specialize[@name=MsPointerModifier]<identifier, "__restrict" | "__uptr" | "__sptr" | "_unaligned" | "__unaligned">
 }
 
 DeclarationList {
@@ -126,25 +126,25 @@ DeclarationList {
 }
 
 declarator {
-  PointerDeclarator[dynamicPrecedence=1] {
+  PointerDeclarator[@dynamicPrecedence=1] {
     MsBasedModifier? "*" msPointerModifier* typeQualifier* declarator
   } |
   FunctionDeclarator |
   ArrayDeclarator {
     declarator !array "[" typeQualifier* (expression | "*")? "]"
   } |
-  ParenthesizedDeclarator[dynamicPrecedence=-10] {
+  ParenthesizedDeclarator[@dynamicPrecedence=-10] {
     "(" declarator ")"
   } |
   Identifier ~identifier |
-  ReferenceDeclarator[dynamicPrecedence=1] {
+  ReferenceDeclarator[@dynamicPrecedence=1] {
     ("&" | "&&") declarator
   } |
   ScopedIdentifier ~identifier |
   TemplateFunction ~identifier |
   OperatorName |
   DestructorName |
-  StructuredBindingDeclarator[dynamicPrecedence=-1] {
+  StructuredBindingDeclarator[@dynamicPrecedence=-1] {
     "[" commaSep1<Identifier ~identifier> "]"
   }
 }
@@ -155,7 +155,7 @@ FunctionDeclarator {
 }
 
 fieldDeclarator {
-  PointerDeclarator[dynamicPrecedence=1] {
+  PointerDeclarator[@dynamicPrecedence=1] {
     MsBasedModifier? "*" msPointerModifier* typeQualifier* fieldDeclarator
   } |
   FunctionDeclarator {
@@ -164,11 +164,11 @@ fieldDeclarator {
   ArrayDeclarator {
     fieldDeclarator !array "[" typeQualifier* (expression | "*")? "]"
   } |
-  ParenthesizedDeclarator[dynamicPrecedence=-10] {
+  ParenthesizedDeclarator[@dynamicPrecedence=-10] {
     "(" fieldDeclarator ")"
   } |
   FieldIdentifier |
-  ReferenceDeclarator[dynamicPrecedence=1] {
+  ReferenceDeclarator[@dynamicPrecedence=1] {
     ("&" | "&&") fieldDeclarator
   } |
   TemplateMethod |
@@ -176,7 +176,7 @@ fieldDeclarator {
 }
 
 typeDeclarator {
-  PointerDeclarator[dynamicPrecedence=1] {
+  PointerDeclarator[@dynamicPrecedence=1] {
     MsBasedModifier? "*" msPointerModifier* typeQualifier* typeDeclarator
   } |
   FunctionDeclarator {
@@ -185,14 +185,14 @@ typeDeclarator {
   ArrayDeclarator {
     typeDeclarator !array "[" typeQualifier* (expression | "*")? "]"
   } |
-  ParenthesizedDeclarator[dynamicPrecedence=-10] {
+  ParenthesizedDeclarator[@dynamicPrecedence=-10] {
     "(" typeDeclarator ")"
   } |
   TypeIdentifier
 }
 
 abstractDeclarator {
-  AbstractPointerDeclarator[dynamicPrecedence=1] {
+  AbstractPointerDeclarator[@dynamicPrecedence=1] {
     "*" (!qualifiers typeQualifier)* abstractDeclarator?
   } |
   AbstractFunctionDeclarator |
@@ -242,7 +242,7 @@ typeSpecifier {
     kw<"class"> MsDeclspecModifier? !structName
     (className | className? virtualSpecifier? (!baseClass BaseClassClause)? FieldDeclarationList)
   } |
-  DependentType[dynamicPrecedence=-1] {
+  DependentType[@dynamicPrecedence=-1] {
     kw<"typename"> typeSpecifier
   } |
   Decltype {
@@ -260,7 +260,7 @@ typeSpecifier {
 // types, which I guess might be useful with preprocessor-defined
 // types, but requires even more GLR magic.
 SizedTypeSpecifier {
-  @specialize[name=TypeSize]<identifier, "signed" | "unsigned" | "long" | "short">+ primitiveType?
+  @specialize[@name=TypeSize]<identifier, "signed" | "unsigned" | "long" | "short">+ primitiveType?
 }
 
 EnumeratorList {
@@ -454,7 +454,7 @@ BinaryExpression {
   expression !bitAnd BitOp { "&" } expression |
   expression !equal CompareOp<"==" | "!="> expression |
   expression !greaterLess
-    (CompareOp<"<=" | ">="> | @extend[name=CompareOp]<"<"> | @extend[name=CompareOp]<templateArgsEnd, ">">) expression |
+    (CompareOp<"<=" | ">="> | @extend[@name=CompareOp]<"<"> | @extend[@name=CompareOp]<templateArgsEnd, ">">) expression |
   expression !bitShift BitOp<"<<" | ">>"> expression |
   expression !concat incDec expression
 }
@@ -472,7 +472,7 @@ TypeDescriptor {
 }
 
 SizeofExpression {
-  kw<"sizeof"> !sizeof (expression | [dynamicPrecedence=1] { "(" !typeSizeof TypeDescriptor ")" }) |
+  kw<"sizeof"> !sizeof (expression | [@dynamicPrecedence=1] { "(" !typeSizeof TypeDescriptor ")" }) |
   kw<"sizeof"> "..." "(" Identifier ")"
 }
 
@@ -528,7 +528,7 @@ FieldDesignator {
     stringLiteralStart (stringLiteralContent | EscapeSequence)* stringLiteralEnd
   }
 
-  Macro[dynamicPrecedence=-10] { MacroName (whitespace? ArgumentList?) }
+  Macro[@dynamicPrecedence=-10] { MacroName (whitespace? ArgumentList?) }
 }
 
 ConcatenatedString {
@@ -560,7 +560,7 @@ className {
 }
 
 virtualSpecifier {
-  @specialize[name=VirtualSpecifier]<identifier, "final" | "override">
+  @specialize[@name=VirtualSpecifier]<identifier, "final" | "override">
 }
 
 ExplicitFunctionSpecifier {
@@ -710,9 +710,9 @@ TemplateFunction {
 
 TemplateArgumentList {
   "<" commaSep<
-    [dynamicPrecedence=3] { TypeDescriptor } |
-    ParameterPackExpansion[dynamicPrecedence=2] { TypeDescriptor "..." } |
-    [dynamicPrecedence=1] { expression }
+    [@dynamicPrecedence=3] { TypeDescriptor } |
+    ParameterPackExpansion[@dynamicPrecedence=2] { TypeDescriptor "..." } |
+    [@dynamicPrecedence=1] { expression }
   > (templateArgsEnd | templateArgsEndFallback)
 }
 
@@ -768,7 +768,7 @@ balancedTokens {
   attributeIdentifier |
   incDec | ArithOp<"+" | "-"> | ArithOp { "*" } | ArithOp<"/" | "%"> | LogicOp { "||" | "&&" } |
   BitOp<"|"> | BitOp<"^"> | BitOp { "&" } | CompareOp<"==" | "!="> | CompareOp<"<=" | ">="> |
-  @extend[name=CompareOp]<"<"> | @extend[name=CompareOp]<templateArgsEnd, ">"> | BitOp<"<<" | ">>"> |
+  @extend[@name=CompareOp]<"<"> | @extend[@name=CompareOp]<templateArgsEnd, ">"> | BitOp<"<<" | ">>"> |
   UpdateOp |
   ";" | ":" | "," | "..." | "::" | "." | "->" |
   Number | String | RawString | CharLiteral
@@ -826,14 +826,14 @@ NamespaceIdentifier {
   identifier !namespace
 }
 
-access { @specialize[name=Access]<identifier, "public" | "private" | "protected"> }
+access { @specialize[@name=Access]<identifier, "public" | "private" | "protected"> }
 
 True { @specialize<identifier, "TRUE" | "true"> }
 
 False { @specialize<identifier, "FALSE" | "false"> }
 
 primitiveType {
-  @specialize[name=PrimitiveType]<identifier,
+  @specialize[@name=PrimitiveType]<identifier,
     "bool" | "char" | "int" | "float" | "double" | "void" | "size_t" | "ssize_t" |
     "intptr_t" | "uintptr_t" | "charptr_t" | "int8_t" | "int16_t" | "int32_t" |
     "int64_t" | "uint8_t" | "uint16_t" | "uint32_t" | "uint64_t" | "char8_t" |
@@ -842,9 +842,9 @@ primitiveType {
 
 RawString { rawStringStart rawStringContent* rawStringEnd }
 
-kw<term> { @specialize[name={term}]<identifier, term> }
+kw<term> { @specialize[@name={term}]<identifier, term> }
 
-skw<term> { @specialize[name={term}]<scopedIdentifier, term> }
+skw<term> { @specialize[@name={term}]<scopedIdentifier, term> }
 
 commaSep<term> { "" | term ("," term)* }
 
@@ -858,14 +858,14 @@ commaSepTrailing<term> { "" | term ("," term?)* }
 
 @external tokens rawStringContinue from "./tokens" { rawStringContent, rawStringEnd }
 
-@external tokens fallback from "./tokens" { templateArgsEndFallback[name=">"], MacroName }
+@external tokens fallback from "./tokens" { templateArgsEndFallback[@name=">"], MacroName }
 
 @tokens {
   whitespace {
     ($[ \t\r\n] | "\\" "\r"? "\n")+
   }
 
-  pp[name="#" {name}]<name> { "#" $[ \t]* name }
+  pp[@name="#" {name}]<name> { "#" $[ \t]* name }
 
   PreprocDirectiveName {
     "#" $[ \t]* $[a-zA-Z] $[a-zA-Z0-9_]*
@@ -913,7 +913,7 @@ commaSepTrailing<term> { "" | term ("," term?)* }
 
   scopedIdentifier { identifier }
 
-  attributeIdentifier[name=Identifier] { identifier }
+  attributeIdentifier[@name=Identifier] { identifier }
 
   DestructorName {
     "~" $[ \t]* identifier
@@ -951,7 +951,7 @@ commaSepTrailing<term> { "" | term ("," term?)* }
     ($[*/%+\-&^|] | "<<" | ">>") "="
   }
 
-  incDec[name=UpdateOp] { "++" | "--" }
+  incDec[@name=UpdateOp] { "++" | "--" }
 
   charLiteralStart { "L'" | "u'" | "U'" | "u8'" | "'" }
 
@@ -965,7 +965,7 @@ commaSepTrailing<term> { "" | term ("," term?)* }
 
   stringLiteralContent { ![\\\n"]+ }
 
-  templateArgsEnd[name=">"] { ">" }
+  templateArgsEnd[@name=">"] { ">" }
 
   "(" ")" "{" "}" "[" "]"
   "," "<" "::"
