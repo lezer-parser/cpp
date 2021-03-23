@@ -1,3 +1,9 @@
+## 0.13.2 (2021-03-23)
+
+### Bug fixes
+
+Fix a crash that sometimes occurred during error-recovery around strings.
+
 ## 0.13.1 (2020-12-04)
 
 ### Bug fixes
