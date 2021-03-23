@@ -41,6 +41,7 @@ export const rawStringContinue = new ExternalTokenizer((input, token, stack) => 
       if (!markerString) {
         let ruleStart = stack.ruleStart
         let match = /"(\S*?)\(/.exec(input.read(ruleStart, Math.min(token.start, ruleStart + 100)))
+        if (!match) return
         markerString = match[1] + '"'
       }
       if (input.read(pos, pos + markerString.length) == markerString) {
