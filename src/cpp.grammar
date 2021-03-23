@@ -528,6 +528,8 @@ FieldDesignator {
     stringLiteralStart (stringLiteralContent | EscapeSequence)* stringLiteralEnd
   }
 
+  RawString { rawStringStart rawStringContent* rawStringEnd }
+
   Macro[@dynamicPrecedence=-10] { MacroName (whitespace? ArgumentList?) }
 }
 
@@ -839,8 +841,6 @@ primitiveType {
     "int64_t" | "uint8_t" | "uint16_t" | "uint32_t" | "uint64_t" | "char8_t" |
     "char16_t" | "char32_t" | "char64_t">
 }
-
-RawString { rawStringStart rawStringContent* rawStringEnd }
 
 kw<term> { @specialize[@name={term}]<identifier, term> }
 
