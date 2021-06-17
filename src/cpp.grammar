@@ -528,8 +528,6 @@ FieldDesignator {
     stringLiteralStart (stringLiteralContent | EscapeSequence)* stringLiteralEnd
   }
 
-  RawString { rawStringStart rawStringContent* rawStringEnd }
-
   Macro[@dynamicPrecedence=-10] { MacroName (whitespace? ArgumentList?) }
 }
 
@@ -854,9 +852,7 @@ commaSepTrailing<term> { "" | term ("," term?)* }
 
 @skip { whitespace | LineComment | BlockComment | PreprocDirective | Macro }
 
-@external tokens rawString from "./tokens" { rawStringStart }
-
-@external tokens rawStringContinue from "./tokens" { rawStringContent, rawStringEnd }
+@external tokens rawString from "./tokens" { RawString }
 
 @external tokens fallback from "./tokens" { templateArgsEndFallback[@name=">"], MacroName }
 
