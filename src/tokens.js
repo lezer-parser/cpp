@@ -1,4 +1,4 @@
-import {ExternalTokenizer} from "lezer"
+import {ExternalTokenizer} from "@lezer/lr"
 import {RawString, templateArgsEndFallback, MacroName} from "./parser.terms.js"
 
 const R = 82, L = 76, u = 117, U = 85,
