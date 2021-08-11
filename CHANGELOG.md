@@ -1,3 +1,11 @@
+## 0.15.0 (2021-08-11)
+
+### Breaking changes
+
+The module's name changed from `lezer-cpp` to `@lezer/cpp`.
+
+Upgrade to the 0.15.0 lezer interfaces.
+
 ## 0.13.2 (2021-03-23)
 
 ### Bug fixes
