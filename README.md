@@ -1,4 +1,4 @@
-# lezer-cpp
+# @lezer/cpp
 
 This is a C++ grammar for the
 [Lezer](https://lezer.codemirror.net/) parser system.
