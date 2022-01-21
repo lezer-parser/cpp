@@ -1,3 +1,9 @@
+## 0.15.1 (2022-01-21)
+
+### Bug fixes
+
+Regenerate with \@lezer/generator 0.15.3 to fix a problem with parsing macros.
+
 ## 0.15.0 (2021-08-11)
 
 ### Breaking changes
