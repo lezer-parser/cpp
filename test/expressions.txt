@@ -691,7 +691,7 @@ void f() {
 Program(FunctionDefinition(PrimitiveType,FunctionDeclarator(Identifier,ParameterList()),CompoundStatement(
   ReturnStatement(return,BinaryExpression(
     BinaryExpression(BinaryExpression(
-      BinaryExpression(BinaryExpression(BinaryExpression(Number,ArithOp,Number),ArithOp,Number),ArithOp,Number),
+      BinaryExpression(BinaryExpression(Number,ArithOp,Number),ArithOp,Number),
       ArithOp,Number),ArithOp,Number),ArithOp,Number)))))
 
 # Initializer list
