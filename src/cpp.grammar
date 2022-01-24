@@ -28,6 +28,8 @@
   return
   typeIdentifier
   structName
+  enumBase
+  newOpArray
   namespace
   else @right
   caseLabel
@@ -233,17 +235,20 @@ typeQualifier {
 
 typeSpecifier[@isGroup=Type] {
   StructSpecifier {
-    kw<"struct"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
+    kw<"struct"> MsDeclspecModifier?
+    (className | className? !structName virtualSpecifier? BaseClassClause? FieldDeclarationList)
   } |
   UnionSpecifier {
-    kw<"union"> MsDeclspecModifier? !structName (className | className? virtualSpecifier? BaseClassClause? FieldDeclarationList)
+    kw<"union"> MsDeclspecModifier?
+    (className | className? !structName virtualSpecifier? BaseClassClause? FieldDeclarationList)
   } |
   EnumSpecifier {
-    kw<"enum"> (kw<"class"> | kw<"struct">)? !structName (className enumBaseClause? EnumeratorList? | EnumeratorList)
+    kw<"enum"> (kw<"class"> | kw<"struct">)?
+    (className (!enumBase enumBaseClause)? (!structName EnumeratorList)? | EnumeratorList)
   } |
   ClassSpecifier {
-    kw<"class"> MsDeclspecModifier? !structName
-    (className | className? virtualSpecifier? (!baseClass BaseClassClause)? FieldDeclarationList)
+    kw<"class"> MsDeclspecModifier?
+    (className | className? !structName virtualSpecifier? (!baseClass BaseClassClause)? FieldDeclarationList)
   } |
   DependentType[@dynamicPrecedence=-1] {
     kw<"typename"> typeSpecifier
@@ -560,7 +565,7 @@ emptyDeclaration {
 }
 
 className {
-  (TypeIdentifier | ScopedTypeIdentifier | TemplateType) !structName
+  (TypeIdentifier | ScopedTypeIdentifier | TemplateType)
 }
 
 virtualSpecifier {
