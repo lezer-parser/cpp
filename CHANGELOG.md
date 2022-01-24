@@ -1,3 +1,15 @@
+## 0.15.2 (2022-01-24)
+
+### Bug fixes
+
+Allow more explicit operator names, stop treating the 'operator' keyword as part of the operator name token.
+
+Allow comment after simple preprocessor directives.
+
+Support friend declarations in template declarations.
+
+Improve the parsing of some ambiguous cases in struct/enum/class specifiers.
+
 ## 0.15.1 (2022-01-21)
 
 ### Bug fixes
