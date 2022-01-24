@@ -62,13 +62,15 @@ topLevelItem {
 }
 
 @skip { ppSpace } {
+  ppEnd { BlockComment* LineComment? "\n" }
+
   PreprocDirective {
-    pp<"include"> (String | SystemLibString | Identifier ArgumentList?) "\n" |
-    pp<"define"> Identifier preprocParams? PreprocArg "\n" |
+    pp<"include"> (String | SystemLibString | Identifier ArgumentList?) ppEnd |
+    pp<"define"> Identifier preprocParams? PreprocArg? "\n" |
     pp<"if"> PreprocArg "\n" |
-    (pp<"ifdef"> | pp<"ifndef">) Identifier "\n" |
-    pp<"else"> "\n" |
-    pp<"endif"> "\n" |
+    (pp<"ifdef"> | pp<"ifndef">) Identifier ppEnd |
+    pp<"else"> ppEnd |
+    pp<"endif"> ppEnd |
     pp<"elif"> PreprocArg "\n" |
     PreprocDirectiveName PreprocArg "\n"
   }
