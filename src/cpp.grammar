@@ -943,14 +943,6 @@ OperatorName<opKw> {
 
   @precedence { LineComment, BlockComment, ArithOp }
 
-  OperatorName {
-    "operator" (UpdateOp | $[=+\-*/%^~!] | "<" $[<=]? | ">" $[>=]? | $[!=] "=" | "&" "&"? | "|" "|"? | "->" | "()" | "[]")
-  }
-
-  @precedence { OperatorName, identifier }
-  @precedence { OperatorName, scopedIdentifier }
-  @precedence { OperatorName }
-
   ArithOp<expr> { expr }
 
   BitOp<expr> { expr }
