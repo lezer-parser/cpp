@@ -586,6 +586,7 @@ TemplateDeclaration {
     AliasDeclaration |
     Declaration |
     TemplateDeclaration |
+    FriendDeclaration |
     FunctionDefinition |
     FunctionDefinition { constructorOrDestructorDefinition } |
     FunctionDefinition { operatorCastDefinition }
