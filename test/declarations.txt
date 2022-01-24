@@ -478,14 +478,14 @@ Program(
     TypeIdentifier,
     ReferenceDeclarator(
       FunctionDeclarator(
-        OperatorName,
+        OperatorName(operator, BitOp),
         ParameterList(
           ParameterDeclaration(TypeIdentifier, AbstractReferenceDeclarator),
           ParameterDeclaration(const, TypeIdentifier, ReferenceDeclarator(Identifier)))))),
   Declaration(
     PrimitiveType,
     FunctionDeclarator(
-      ScopedIdentifier(NamespaceIdentifier, OperatorName),
+      ScopedIdentifier(NamespaceIdentifier, OperatorName(operator, CompareOp)),
       ParameterList(
         ParameterDeclaration(const, TypeIdentifier, ReferenceDeclarator(Identifier))),
       const)))

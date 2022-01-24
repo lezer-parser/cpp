@@ -140,14 +140,14 @@ Program(
         TypeIdentifier,
         ReferenceDeclarator(
           FunctionDeclarator(
-            OperatorName,
+            OperatorName(operator),
             ParameterList(ParameterDeclaration(const, TypeIdentifier, AbstractReferenceDeclarator)))),
         DefaultMethodClause(default)),
       FunctionDefinition(
         TypeIdentifier,
         ReferenceDeclarator(
           FunctionDeclarator(
-            OperatorName,
+            OperatorName(operator),
             ParameterList(ParameterDeclaration(TypeIdentifier, AbstractReferenceDeclarator)))),
         DeleteMethodClause(delete)))))
 

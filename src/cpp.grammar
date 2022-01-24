@@ -23,6 +23,7 @@
   specifiers
   cast
   more
+  arrowStar
   subscriptDesignator
   return
   typeIdentifier
@@ -142,7 +143,7 @@ declarator {
   } |
   ScopedIdentifier ~identifier |
   TemplateFunction ~identifier |
-  OperatorName |
+  OperatorName<kw<"operator">> ~opDecl |
   DestructorName |
   StructuredBindingDeclarator[@dynamicPrecedence=-1] {
     "[" commaSep1<Identifier ~identifier> "]"
@@ -172,7 +173,7 @@ fieldDeclarator {
     ("&" | "&&") fieldDeclarator
   } |
   TemplateMethod |
-  OperatorName
+  OperatorName<kw<"operator">> ~opDecl
 }
 
 typeDeclarator {
@@ -407,6 +408,7 @@ expression[@isGroup=Expression] {
   ParenthesizedExpression |
   TemplateFunction ~identifier |
   ScopedIdentifier ~identifier |
+  OperatorName<kw<"operator">> ~opDecl |
   NewExpression |
   DeleteExpression |
   LambdaExpression |
@@ -804,12 +806,12 @@ ParameterPackExpansion {
 
 ScopedFieldIdentifier {
   (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace
-  "::" (FieldIdentifier { scopedIdentifier } | OperatorName | DestructorName)
+  "::" (FieldIdentifier { scopedIdentifier } | OperatorName<skw<"operator">> | DestructorName)
 }
 
 ScopedIdentifier {
   (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace
-  "::" (Identifier { scopedIdentifier } | OperatorName | DestructorName)
+  "::" (Identifier { scopedIdentifier } | OperatorName<skw<"operator">> | DestructorName)
 }
 
 ScopedTypeIdentifier {
@@ -855,6 +857,18 @@ commaSepTrailing<term> { "" | term ("," term?)* }
 @external tokens rawString from "./tokens" { RawString }
 
 @external tokens fallback from "./tokens" { templateArgsEndFallback[@name=">"], MacroName }
+
+OperatorName<opKw> {
+  opKw (
+    UpdateOp | incDec | "=" |
+    ArithOp<$[*/%+\-]> |
+    BitOp<$[^~&|] | "<<" | ">>"> |
+    CompareOp<"<" "="? | ">" "="? | $[!=] "="> |
+    LogicOp<"!" | "&&" | "||"> |
+    "->" (!arrowStar "*")? | "(" ")" | "[" "]" |
+    (kw<"new"> | kw<"delete">) (!newOpArray "[" "]")?
+  )
+}
 
 @tokens {
   whitespace {
