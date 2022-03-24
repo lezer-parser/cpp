@@ -983,3 +983,5 @@ OperatorName<opKw> {
   @precedence { stringLiteralStart, charLiteralStart, identifier }
   @precedence { stringLiteralStart, charLiteralStart, attributeIdentifier }
 }
+
+@external propSource cppHighlighting from "./highlight"
