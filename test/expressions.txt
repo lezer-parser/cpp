@@ -708,3 +708,14 @@ Program(ExpressionStatement(CallExpression(Identifier,ArgumentList(InitializerLi
   InitializerPair(FieldDesignator(FieldIdentifier),Identifier),
   InitializerPair(FieldDesignator(FieldIdentifier),CallExpression(FieldExpression(Identifier,FieldIdentifier),ArgumentList)),
   InitializerPair(FieldDesignator(FieldIdentifier),FieldExpression(Identifier,FieldIdentifier)))))))
+
+# Assignment with Initializer List
+
+void findNextMove() {
+  bestMoveSoFar = {nextMove, second};
+}
+
+==>
+
+Program(FunctionDefinition(PrimitiveType,FunctionDeclarator(Identifier,ParameterList),CompoundStatement(
+  ExpressionStatement(AssignmentExpression(Identifier,InitializerList(Identifier,Identifier))))))
