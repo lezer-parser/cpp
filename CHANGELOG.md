@@ -1,3 +1,9 @@
+## 0.15.3 (2022-03-28)
+
+### Bug fixes
+
+Properly parse braced initializer lists in assignment expressions.
+
 ## 0.15.2 (2022-01-24)
 
 ### Bug fixes
