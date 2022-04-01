@@ -107,6 +107,20 @@ Program(
         ExplicitFunctionSpecifier(explicit, True),
         FunctionDeclarator(Identifier, ParameterList(ParameterDeclaration(SizedTypeSpecifier(TypeSize), Identifier)))))))
 
+# Destructor in class
+
+class C {
+  C(int i) {}
+  ~C() {}
+};
+
+==>
+
+Program(ClassSpecifier(class,TypeIdentifier,FieldDeclarationList(
+  FunctionDefinition(FunctionDeclarator(Identifier,ParameterList(ParameterDeclaration(PrimitiveType,Identifier))),
+    CompoundStatement),
+  FunctionDefinition(FunctionDeclarator(DestructorName,ParameterList),CompoundStatement))))
+
 
 # Default and deleted methods
 
