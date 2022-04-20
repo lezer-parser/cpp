@@ -1,9 +1,20 @@
+## 0.16.0 (2022-04-20)
+
+### Breaking changes
+
+Move to 0.16 serialized parser format.
+
 ## 0.15.3 (2022-03-28)
 
 ### Bug fixes
 
 Properly parse braced initializer lists in assignment expressions.
 
+### New features
+
+The parser now includes syntax highlighting information in its node types.
+
+>>>>>>> 9081cc7 (Mark version 0.16.0)
 ## 0.15.2 (2022-01-24)
 
 ### Bug fixes
