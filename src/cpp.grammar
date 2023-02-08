@@ -3,6 +3,7 @@
   subscript
   arguments
   typeSizeof
+  placeholder
   baseClass
   suffix @left
   prefix @left
@@ -10,13 +11,15 @@
   mult @left
   add @left
   bitShift @left
-  sizeof
+  kwExprExtra
+  kwExpr
   greaterLess @left
   equal @left
   bitAnd @left
   bitXor @left
   bitOr @left
-  logic @left
+  logicAnd @left
+  logicOr @left
   concat @left
   params
   array
@@ -39,6 +42,7 @@
   pack
   assign @right
   ternary @right
+  absDecl
 }
 
 @top Program {
@@ -49,10 +53,13 @@ topLevelItem {
   FunctionDefinition |
   LinkageSpecification |
   Declaration |
+  ExportDeclaration |
+  ImportDeclaration |
   statement |
   TypeDefinition |
   emptyDeclaration |
   NamespaceDefinition |
+  ConceptDefinition |
   UsingDeclaration |
   AliasDeclaration |
   StaticAssertDeclaration |
@@ -60,7 +67,8 @@ topLevelItem {
   TemplateInstantiation |
   FunctionDefinition { constructorOrDestructorDefinition } |
   FunctionDefinition { operatorCastDefinition } |
-  Declaration { operatorCastDeclaration }
+  Declaration { operatorCastDeclaration } |
+  ModuleDeclaration
 }
 
 @skip { ppSpace } {
@@ -81,7 +89,7 @@ topLevelItem {
 preprocParams { "(" commaSep<Identifier | "..."> ")" }
 
 FunctionDefinition {
-  Attribute* msCallModifier? declarationSpecifiers declarator CompoundStatement
+  Attribute* msCallModifier? declarationSpecifiers declarator (CompoundStatement | TryStatement)
 }
 
 Declaration {
@@ -154,9 +162,13 @@ declarator {
   }
 }
 
+functionSpecifiers {
+  (typeQualifier | virtualSpecifier | "&" | "&&" | Noexcept | RequiresClause | ThrowSpecifier)* TrailingReturnType?
+}
+
 FunctionDeclarator {
-  declarator !params ParameterList !specifiers AttributeSpecifier*
-  (!specifiers (typeQualifier | virtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType))*
+  declarator !params ParameterList !specifiers functionSpecifiers AttributeSpecifier*
+  (!specifiers )*
 }
 
 fieldDeclarator {
@@ -164,7 +176,7 @@ fieldDeclarator {
     MsBasedModifier? "*" msPointerModifier* typeQualifier* fieldDeclarator
   } |
   FunctionDeclarator {
-    fieldDeclarator !params ParameterList (typeQualifier | virtualSpecifier | Noexcept | ThrowSpecifier | TrailingReturnType)*
+    fieldDeclarator !params ParameterList functionSpecifiers
   } |
   ArrayDeclarator {
     fieldDeclarator !array "[" typeQualifier* (expression | "*")? "]"
@@ -198,7 +210,7 @@ typeDeclarator {
 
 abstractDeclarator {
   AbstractPointerDeclarator[@dynamicPrecedence=1] {
-    "*" (!qualifiers typeQualifier)* abstractDeclarator?
+    "*" (!qualifiers typeQualifier)* (!absDecl abstractDeclarator)?
   } |
   AbstractFunctionDeclarator |
   AbstractArrayDeclarator {
@@ -208,12 +220,12 @@ abstractDeclarator {
     "(" abstractDeclarator ")"
   } |
   AbstractReferenceDeclarator {
-    ("&" | "&&") abstractDeclarator?
+    ("&" | "&&") (!absDecl abstractDeclarator)?
   }
 }
 
 AbstractFunctionDeclarator {
-  abstractDeclarator? !params ParameterList (typeQualifier | Noexcept | ThrowSpecifier)* !return TrailingReturnType?
+  abstractDeclarator? !params ParameterList (typeQualifier | "&" | "&&" | Noexcept | ThrowSpecifier)* !return TrailingReturnType?
 }
 
 InitDeclarator {
@@ -226,43 +238,40 @@ CompoundStatement {
 }
 
 storageClassSpecifier {
-  kw<"extern"> | kw<"static"> | kw<"register"> | kw<"inline">
+  kw<"extern"> | kw<"static"> | kw<"register"> | kw<"inline"> | kw<"thread_local">
 }
 
 typeQualifier {
-  kw<"const"> | kw<"volatile"> | kw<"restrict"> | kw<"_Atomic"> | kw<"mutable"> | kw<"constexpr">
+  kw<"const"> | kw<"volatile"> | kw<"restrict"> | kw<"_Atomic"> | kw<"mutable"> | kw<"constexpr"> | kw<"constinit"> | kw<"consteval">
 }
 
 typeSpecifier[@isGroup=Type] {
-  StructSpecifier {
-    kw<"struct"> MsDeclspecModifier?
-    (className | className? !structName virtualSpecifier? BaseClassClause? FieldDeclarationList)
-  } |
-  UnionSpecifier {
-    kw<"union"> MsDeclspecModifier?
-    (className | className? !structName virtualSpecifier? BaseClassClause? FieldDeclarationList)
-  } |
+  StructSpecifier { kw<"struct"> classSpecifier } |
+  UnionSpecifier { kw<"union"> classSpecifier } |
+  ClassSpecifier { kw<"class"> classSpecifier } |
   EnumSpecifier {
     kw<"enum"> (kw<"class"> | kw<"struct">)?
     (className (!enumBase enumBaseClause)? (!structName EnumeratorList)? | EnumeratorList)
   } |
-  ClassSpecifier {
-    kw<"class"> MsDeclspecModifier?
-    (className | className? !structName virtualSpecifier? (!baseClass BaseClassClause)? FieldDeclarationList)
-  } |
   DependentType[@dynamicPrecedence=-1] {
     kw<"typename"> typeSpecifier
   } |
-  Decltype {
-    kw<"decltype"> "(" expression ")"
-  } |
+  Decltype |
   SizedTypeSpecifier |
   primitiveType ~afterPrimitive |
   kw<"auto"> |
   ScopedTypeIdentifier !simpleTypeIdentifier |
   TypeIdentifier !simpleTypeIdentifier |
-  TemplateType
+  TemplateType |
+  PlaceholderTypeSpecifier { typeSpecifier !placeholder (kw<"auto"> | Decltype) }
 }
+
+classSpecifier {
+  MsDeclspecModifier? Attribute*
+  (className | className? !structName virtualSpecifier? BaseClassClause? FieldDeclarationList)
+}
+
+Decltype { kw<"decltype"> "(" (expression | kw<"auto">) ")" }
 
 // FIXME this used to allow arbitrary TypeNames as well as primitive
 // types, which I guess might be useful with preprocessor-defined
@@ -287,7 +296,7 @@ fieldDeclarationListItem {
   TemplateDeclaration |
   FunctionDefinition {
     Attribute* kw<"virtual">? declarationSpecifiers
-    fieldDeclarator (CompoundStatement | !more DefaultMethodClause | DeleteMethodClause)
+    fieldDeclarator (CompoundStatement | TryStatement | !more DefaultMethodClause | DeleteMethodClause)
   } |
   FunctionDefinition { constructorOrDestructorDefinition } |
   Declaration {
@@ -312,7 +321,7 @@ Enumerator {
 }
 
 ParameterList {
-  "(" ~argOrParam commaSep<(ParameterDeclaration | OptionalParameterDeclaration | VariadicParameterDeclaration | "...")> ")"
+  "(" ~argOrParam commaSep<(ParameterDeclaration | OptionalParameterDeclaration | VariadicParameterDeclaration | "..." ~argOrParam)> ")"
 }
 
 ParameterDeclaration {
@@ -322,6 +331,7 @@ ParameterDeclaration {
 statement[@isGroup=Statement] {
   CaseStatement |
   nonCaseStatement |
+  AttributeStatement |
   ForRangeLoop |
   TryStatement |
   ThrowStatement
@@ -339,8 +349,12 @@ nonCaseStatement {
   ReturnStatement |
   BreakStatement |
   ContinueStatement |
-  GotoStatement
+  GotoStatement |
+  CoReturnStatement |
+  CoYieldStatement
 }
+
+AttributeStatement { Attribute+ (CaseStatement | nonCaseStatement | ForRangeLoop | TryStatement) }
 
 LabeledStatement {
   StatementIdentifier ":" statement
@@ -359,7 +373,7 @@ SwitchStatement {
 }
 
 CaseStatement {
-  (kw<"case"> expression | kw<"default">) ":" (!caseLabel (nonCaseStatement | Declaration | TypeDefinition))*
+  (kw<"case"> expression | kw<"default">) ":" (!caseLabel (nonCaseStatement | AttributeStatement | Declaration | TypeDefinition))*
 }
 
 WhileStatement {
@@ -391,6 +405,14 @@ GotoStatement {
   kw<"goto"> StatementIdentifier ";"
 }
 
+CoReturnStatement {
+  kw<"co_return"> expression? ";"
+}
+
+CoYieldStatement {
+  kw<"co_yield"> expression ";"
+}
+
 expression[@isGroup=Expression] {
   ConditionalExpression |
   AssignmentExpression |
@@ -400,6 +422,8 @@ expression[@isGroup=Expression] {
   CastExpression |
   PointerExpression |
   SizeofExpression |
+  CoAwaitExpression |
+  RequiresExpression |
   SubscriptExpression |
   CallExpression |
   FieldExpression |
@@ -422,7 +446,9 @@ expression[@isGroup=Expression] {
   ParameterPackExpansion |
   kw<"nullptr"> |
   kw<"this"> |
-  RawString
+  RawString |
+  UserDefinedLiteral |
+  ParamPack { "..." ~argOrParam }
 }
 
 CommaExpression {
@@ -457,13 +483,14 @@ UnaryExpression {
 BinaryExpression {
   expression !add ArithOp<"+" | "-"> expression |
   expression !mult (ArithOp { "*" } | ArithOp<"/" | "%">) expression |
-  expression !logic LogicOp { "||" | "&&" } expression |
+  expression !logicAnd LogicOp { "&&" } expression |
+  expression !logicOr LogicOp { "||" } expression |
   expression !bitOr BitOp<"|"> expression |
   expression !bitXor BitOp<"^"> expression |
   expression !bitAnd BitOp { "&" } expression |
   expression !equal CompareOp<"==" | "!="> expression |
   expression !greaterLess
-    (CompareOp<"<=" | ">="> | @extend[@name=CompareOp]<"<"> | @extend[@name=CompareOp]<templateArgsEnd, ">">) expression |
+    (CompareOp<"<=" | ">=" | "<=>"> | @extend[@name=CompareOp]<"<"> | @extend[@name=CompareOp]<templateArgsEnd, ">">) expression |
   expression !bitShift BitOp<"<<" | ">>"> expression |
   expression !concat incDec expression
 }
@@ -481,9 +508,27 @@ TypeDescriptor {
 }
 
 SizeofExpression {
-  kw<"sizeof"> !sizeof (expression | [@dynamicPrecedence=1] { "(" !typeSizeof TypeDescriptor ")" }) |
-  kw<"sizeof"> "..." "(" Identifier ")"
+  kw<"sizeof"> !kwExpr (expression | [@dynamicPrecedence=1] { "(" !typeSizeof TypeDescriptor ")" }) |
+  kw<"sizeof"> "..." !kwExprExtra "(" Identifier ")"
 }
+
+CoAwaitExpression {
+  kw<"co_await"> !kwExpr expression
+}
+
+RequiresExpression {
+  kw<"requires"> !kwExpr ParameterList? RequirementList { "{" requirement* "}" }
+}
+
+requirement {
+  SimpleRequirement { (expression | CommaExpression)? ";" } |
+  TypeRequirement { kw<"typename"> className ";" } |
+  CompoundRequirement { "{" expression "}" kw<"noexcept">? ReturnTypeRequirement? ";" } |
+  ReturnTypeRequirement ";" |
+  RequiresClause ";"
+}
+
+ReturnTypeRequirement { "->" expression }
 
 SubscriptExpression {
   expression !subscript "[" expression "]"
@@ -544,6 +589,10 @@ ConcatenatedString {
   (RawString | String) (RawString | String)+
 }
 
+UserDefinedLiteral {
+  (Number | CharLiteral | String | RawString | ConcatenatedString) Identifier
+}
+
 TypeIdentifier {
   identifier
 }
@@ -578,7 +627,7 @@ ExplicitFunctionSpecifier {
 }
 
 BaseClassClause {
-  ":" commaSep1<access? className "..."?>
+  ":" Attribute* commaSep1<(access | kw<"virtual">)* className "..."?>
 }
 
 enumBaseClause {
@@ -586,16 +635,32 @@ enumBaseClause {
 }
 
 TemplateDeclaration {
-  kw<"template"> TemplateParameterList (
+  kw<"template"> TemplateParameterList RequiresClause? (
     emptyDeclaration |
     AliasDeclaration |
     Declaration |
     TemplateDeclaration |
     FriendDeclaration |
     FunctionDefinition |
+    ConceptDefinition |
     FunctionDefinition { constructorOrDestructorDefinition } |
     FunctionDefinition { operatorCastDefinition }
   )
+}
+
+RequiresClause {
+  kw<"requires"> constraint
+}
+
+constraint {
+  True |
+  False |
+  className |
+  ParenthesizedExpression |
+  LambdaExpression |
+  RequiresExpression |
+  ConstraintConjuction { constraint !logicAnd LogicOp { "&&" } constraint } |
+  ConstraintDisjunction { constraint !logicOr LogicOp { "||" } constraint }
 }
 
 TemplateInstantiation {
@@ -662,7 +727,7 @@ FieldInitializer {
 operatorCastDefinition {
   (storageClassSpecifier | typeQualifier | AttributeSpecifier)*
   ~specifiers (kw<"virtual"> | ExplicitFunctionSpecifier)?
-  OperatorCast (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
+  OperatorCast (CompoundStatement | TryStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
 operatorCastDeclaration {
@@ -675,7 +740,7 @@ constructorOrDestructorDefinition {
   (kw<"virtual"> | ExplicitFunctionSpecifier)?
   FunctionDeclarator
   FieldInitializerList?
-  (CompoundStatement | DefaultMethodClause | DeleteMethodClause)
+  (CompoundStatement | TryStatement | DefaultMethodClause | DeleteMethodClause)
 }
 
 DefaultMethodClause {
@@ -695,7 +760,7 @@ AccessSpecifier {
 }
 
 TrailingReturnType {
-  "->" typeQualifier? typeSpecifier abstractDeclarator?
+  "->" typeQualifier? typeSpecifier (!absDecl abstractDeclarator)?
 }
 
 Noexcept {
@@ -726,21 +791,45 @@ TemplateArgumentList {
   > (templateArgsEnd | templateArgsEndFallback)
 }
 
+ConceptDefinition {
+  kw<"concept"> Identifier "=" expression ";"
+}
+
 NamespaceDefinition {
-  kw<"namespace"> Identifier? DeclarationList
+  kw<"inline">? kw<"namespace"> (Identifier ("::" kw<"inline">? Identifier)*)?
+  (DeclarationList | "=" (Identifier | ScopedIdentifier) ";")
 }
 
 UsingDeclaration {
-  kw<"using"> kw<"namespace">? (Identifier | ScopedIdentifier) ";"
+  kw<"using"> (kw<"namespace"> | kw<"enum">)? (Identifier | ScopedIdentifier) ";"
 }
 
 AliasDeclaration {
-  kw<"using"> TypeIdentifier "=" TypeDescriptor ";"
+  kw<"using"> TypeIdentifier Attribute* "=" TypeDescriptor ";"
 }
 
 StaticAssertDeclaration {
   kw<"static_assert"> "(" expression ("," (String | RawString | ConcatenatedString))? ")" ";"
 }
+
+ModuleDeclaration {
+  kw<"module"> (ModuleName Attribute* | ":" access)? ";"
+}
+
+ExportDeclaration {
+  kw<"export"> (topLevelItem | DeclarationList)
+}
+
+ImportDeclaration {
+  kw<"import"> (ModuleName | HeaderName) Attribute* ";"
+}
+
+ModuleName {
+  Identifier ("." Identifier)* modulePartition? |
+  modulePartition
+}
+
+modulePartition { ":" PartitionName { identifier } }
 
 ConditionClause {
   "(" (
@@ -750,7 +839,10 @@ ConditionClause {
 }
 
 ForRangeLoop {
-  kw<"for"> "(" declarationSpecifiers declarator ":" (expression | InitializerList) ")" statement
+  kw<"for"> "("
+  (AliasDeclaration | TypeDefinition | Declaration | (expression | CommaExpression)? ";")?
+  declarationSpecifiers declarator ":" (expression | InitializerList) ")"
+  statement
 }
 
 ThrowStatement {
@@ -777,7 +869,7 @@ balancedTokens {
   "(" balancedTokens* ")" |
   attributeIdentifier |
   incDec | ArithOp<"+" | "-"> | ArithOp { "*" } | ArithOp<"/" | "%"> | LogicOp { "||" | "&&" } |
-  BitOp<"|"> | BitOp<"^"> | BitOp { "&" } | CompareOp<"==" | "!="> | CompareOp<"<=" | ">="> |
+  BitOp<"|"> | BitOp<"^"> | BitOp { "&" } | CompareOp<"==" | "!="> | CompareOp<"<=" | ">=" | "<=>"> |
   @extend[@name=CompareOp]<"<"> | @extend[@name=CompareOp]<templateArgsEnd, ">"> | BitOp<"<<" | ">>"> |
   UpdateOp |
   ";" | ":" | "," | "..." | "::" | "." | "->" |
@@ -797,7 +889,7 @@ DeleteExpression {
 }
 
 LambdaExpression {
-  LambdaCaptureSpecifier AbstractFunctionDeclarator? CompoundStatement
+  LambdaCaptureSpecifier (TemplateParameterList RequiresClause)? AbstractFunctionDeclarator? CompoundStatement
 }
 
 LambdaCaptureSpecifier {
@@ -813,7 +905,7 @@ ParameterPackExpansion {
 }
 
 ScopedFieldIdentifier {
-  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier)? !namespace
+  (NamespaceIdentifier | TemplateType | ScopedNamespaceIdentifier | Decltype)? !namespace
   "::" (FieldIdentifier { scopedIdentifier } | OperatorName<skw<"operator">> | DestructorName)
 }
 
@@ -871,10 +963,12 @@ OperatorName<opKw> {
     UpdateOp | incDec | "=" |
     ArithOp<$[*/%+\-]> |
     BitOp<$[^~&|] | "<<" | ">>"> |
-    CompareOp<"<" "="? | ">" "="? | $[!=] "="> |
+    CompareOp<"<" ("=" ">"?)? | ">" "="? | $[!=] "="> |
     LogicOp<"!" | "&&" | "||"> |
     "->" (!arrowStar "*")? | "(" ")" | "[" "]" |
-    (kw<"new"> | kw<"delete">) (!newOpArray "[" "]")?
+    (kw<"new"> | kw<"delete">) (!newOpArray "[" "]")? |
+    kw<"co_await"> |
+    '""' Identifier
   )
 }
 
@@ -938,6 +1032,8 @@ OperatorName<opKw> {
   }
 
   @precedence { DestructorName, BitOp }
+
+  HeaderName { "<" ![>]+ ">" }
 
   LineComment { "//" ("\\" (![\n] | "\\r"? "\\n") | ![\n])* }
 

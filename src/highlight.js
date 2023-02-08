@@ -1,9 +1,10 @@
 import {styleTags, tags as t} from "@lezer/highlight"
 
 export const cppHighlighting = styleTags({
-  "typedef struct union enum class typename decltype auto template operator friend noexcept namespace using __attribute__ __declspec __based": t.definitionKeyword,
-  "extern MsCallModifier MsPointerModifier extern static register inline const volatile restrict _Atomic mutable constexpr virtual explicit VirtualSpecifier Access": t.modifier,
+  "typedef struct union enum class typename decltype auto template operator friend noexcept namespace using requires concept import export module __attribute__ __declspec __based": t.definitionKeyword,
+  "extern MsCallModifier MsPointerModifier extern static register thread_local inline const volatile restrict _Atomic mutable constexpr constinit consteval virtual explicit VirtualSpecifier Access": t.modifier,
   "if else switch for while do case default return break continue goto throw try catch": t.controlKeyword,
+  "co_return co_yield co_await": t.controlKeyword,
   "new sizeof delete static_assert": t.operatorKeyword,
   "NULL nullptr": t.null,
   this: t.self,
@@ -12,6 +13,8 @@ export const cppHighlighting = styleTags({
   TypeIdentifier: t.typeName,
   FieldIdentifier: t.propertyName,
   "CallExpression/FieldExpression/FieldIdentifier": t.function(t.propertyName),
+  "ModuleName/Identifier": t.namespace,
+  "PartitionName": t.labelName,
   StatementIdentifier: t.labelName,
   "Identifier DestructorName": t.variableName,
   "CallExpression/Identifier": t.function(t.variableName),
@@ -32,6 +35,7 @@ export const cppHighlighting = styleTags({
   "RawString SystemLibString": t.special(t.string),
   CharLiteral: t.character,
   EscapeSequence: t.escape,
+  "UserDefinedLiteral/Identifier": t.literal,
   PreProcArg: t.meta,
   "PreprocDirectiveName #include #ifdef #ifndef #if #define #else #endif #elif": t.processingInstruction,
   MacroName: t.special(t.name),
