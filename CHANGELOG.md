@@ -1,3 +1,9 @@
+## 1.1.0 (2023-02-08)
+
+### New features
+
+Add support for a number of C++20 constructs.
+
 ## 1.0.0 (2022-06-06)
 
 ### New features
