@@ -2667,3 +2667,21 @@ Program (
     )
   )
 )
+
+# Function pointer declaration
+void (*f)();
+==>
+Program (
+  ExpressionStatement (
+    FunctionPointerDeclaration (
+      PrimitiveType,
+      FunctionDeclarator (
+        Identifier,
+        ParameterList (
+          "(",
+          ")"
+        )
+      )
+    )
+  )
+)
