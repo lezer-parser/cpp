@@ -1,5 +1,4 @@
 # declaration specs
-
 struct __declspec(dllexport) s2
 {
 };
@@ -9,20 +8,48 @@ union __declspec(noinline) u2 {
 
 class __declspec(uuid) u2 {
 };
-
 ==>
-
-Program(
-  StructSpecifier(struct,
-    MsDeclspecModifier(__declspec, Identifier),
+Program (
+  StructSpecifier (
+    "struct",
+    MsDeclspecModifier (
+      "__declspec",
+      "(",
+      Identifier,
+      ")"
+    ),
     TypeIdentifier,
-    FieldDeclarationList),
-  UnionSpecifier(union,
-    MsDeclspecModifier(__declspec, Identifier),
+    FieldDeclarationList (
+      "{",
+      "}"
+    )
+  ),
+  UnionSpecifier (
+    "union",
+    MsDeclspecModifier (
+      "__declspec",
+      "(",
+      Identifier,
+      ")"
+    ),
     TypeIdentifier,
-    FieldDeclarationList),
-  ClassSpecifier(class,
-    MsDeclspecModifier(__declspec, Identifier),
+    FieldDeclarationList (
+      "{",
+      "}"
+    )
+  ),
+  ClassSpecifier (
+    "class",
+    MsDeclspecModifier (
+      "__declspec",
+      "(",
+      Identifier,
+      ")"
+    ),
     TypeIdentifier,
-    FieldDeclarationList))
-
+    FieldDeclarationList (
+      "{",
+      "}"
+    )
+  )
+)

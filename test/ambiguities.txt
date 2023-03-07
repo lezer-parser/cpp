@@ -1,41 +1,75 @@
 # template functions vs relational expressions
-
 T1 a = b < c > d;
 T2 e = f<T3>(g);
 int a = std::get<0>(t);
-
 ==>
-
-Program(
-  Declaration(
+Program (
+  Declaration (
     TypeIdentifier,
-    InitDeclarator(
+    InitDeclarator (
       Identifier,
-      BinaryExpression(
-        BinaryExpression(Identifier, CompareOp, Identifier),
+      BinaryExpression (
+        BinaryExpression (
+          Identifier,
+          CompareOp,
+          Identifier
+        ),
         CompareOp,
-        Identifier))),
-  Declaration(
+        Identifier
+      )
+    )
+  ),
+  Declaration (
     TypeIdentifier,
-    InitDeclarator(
+    InitDeclarator (
       Identifier,
-      CallExpression(
-        TemplateFunction(Identifier, TemplateArgumentList(
-          TypeDescriptor(TypeIdentifier))),
-        ArgumentList(Identifier)))),
-  Declaration(
+      CallExpression (
+        TemplateFunction (
+          Identifier,
+          TemplateArgumentList (
+            "<",
+            TypeDescriptor (
+              TypeIdentifier
+            ),
+            ">"
+          )
+        ),
+        ArgumentList (
+          "(",
+          Identifier,
+          ")"
+        )
+      )
+    )
+  ),
+  Declaration (
     PrimitiveType,
-    InitDeclarator(
+    InitDeclarator (
       Identifier,
-      CallExpression(
-        TemplateFunction(
-          ScopedIdentifier(NamespaceIdentifier, Identifier),
-          TemplateArgumentList(Number)),
-        ArgumentList(Identifier)))))
-
+      CallExpression (
+        TemplateFunction (
+          ScopedIdentifier (
+            NamespaceIdentifier,
+            "::",
+            Identifier
+          ),
+          TemplateArgumentList (
+            "<",
+            Number,
+            ">"
+          )
+        ),
+        ArgumentList (
+          "(",
+          Identifier,
+          ")"
+        )
+      )
+    )
+  )
+)
 
 # function declarations vs variable initializations
-
 // Function declarations
 T1 a(T2 *b);
 T3 c(T4 &d, T5 &&e);
@@ -43,56 +77,125 @@ T3 c(T4 &d, T5 &&e);
 // Variable declarations with initializers
 T7 f(g.h);
 T6 i{j};
-
 ==>
-
-Program(
+Program (
   LineComment,
-  Declaration(
+  Declaration (
     TypeIdentifier,
-    FunctionDeclarator(
+    FunctionDeclarator (
       Identifier,
-      ParameterList(ParameterDeclaration(TypeIdentifier, PointerDeclarator(Identifier))))),
-  Declaration(
+      ParameterList (
+        "(",
+        ParameterDeclaration (
+          PointerType (
+            TypeIdentifier,
+            PointerStar
+          ),
+          Identifier
+        ),
+        ")"
+      )
+    )
+  ),
+  Declaration (
     TypeIdentifier,
-    FunctionDeclarator(
+    FunctionDeclarator (
       Identifier,
-      ParameterList(
-        ParameterDeclaration(TypeIdentifier, ReferenceDeclarator(Identifier)),
-        ParameterDeclaration(TypeIdentifier, ReferenceDeclarator(Identifier))))),
-
+      ParameterList (
+        "(",
+        ParameterDeclaration (
+          TypeIdentifier,
+          ReferenceDeclarator (
+            Identifier
+          )
+        ),
+        ",",
+        ParameterDeclaration (
+          TypeIdentifier,
+          ReferenceDeclarator (
+            Identifier
+          )
+        ),
+        ")"
+      )
+    )
+  ),
   LineComment,
-  Declaration(
+  Declaration (
     TypeIdentifier,
-    InitDeclarator(
+    InitDeclarator (
       Identifier,
-      ArgumentList(FieldExpression(Identifier, FieldIdentifier)))),
-  Declaration(
+      ArgumentList (
+        "(",
+        FieldExpression (
+          Identifier,
+          FieldIdentifier
+        ),
+        ")"
+      )
+    )
+  ),
+  Declaration (
     TypeIdentifier,
-    InitDeclarator(
+    InitDeclarator (
       Identifier,
-      InitializerList(Identifier))))
-
+      InitializerList (
+        "{",
+        Identifier,
+        "}"
+      )
+    )
+  )
+)
 
 # template classes vs relational expressions
-
 int main() {
   T1<T2> v1;
   T1<T2> v2 = v3;
 }
-
 ==>
-
-Program(FunctionDefinition(
-  PrimitiveType,
-  FunctionDeclarator(Identifier, ParameterList),
-  CompoundStatement(
-    Declaration(
-      TemplateType(TypeIdentifier,
-        TemplateArgumentList(TypeDescriptor(TypeIdentifier))),
-      Identifier),
-    Declaration(
-      TemplateType(TypeIdentifier,
-        TemplateArgumentList(TypeDescriptor(TypeIdentifier))),
-      InitDeclarator(Identifier, Identifier)))))
-
+Program (
+  FunctionDefinition (
+    PrimitiveType,
+    FunctionDeclarator (
+      Identifier,
+      ParameterList (
+        "(",
+        ")"
+      )
+    ),
+    CompoundStatement (
+      "{",
+      Declaration (
+        TemplateType (
+          TypeIdentifier,
+          TemplateArgumentList (
+            "<",
+            TypeDescriptor (
+              TypeIdentifier
+            ),
+            ">"
+          )
+        ),
+        Identifier
+      ),
+      Declaration (
+        TemplateType (
+          TypeIdentifier,
+          TemplateArgumentList (
+            "<",
+            TypeDescriptor (
+              TypeIdentifier
+            ),
+            ">"
+          )
+        ),
+        InitDeclarator (
+          Identifier,
+          Identifier
+        )
+      ),
+      "}"
+    )
+  )
+)
