@@ -43,6 +43,7 @@
   assign @right
   ternary @right
   absDecl
+  precTypePointerStar @right
 }
 
 @top Program {
@@ -245,7 +246,18 @@ typeQualifier {
   kw<"const"> | kw<"volatile"> | kw<"restrict"> | kw<"_Atomic"> | kw<"mutable"> | kw<"constexpr"> | kw<"constinit"> | kw<"consteval">
 }
 
-typeSpecifier[@isGroup=Type] {
+typeSpecifier {
+  PointerType |
+  typeSpecifierInner
+}
+
+PointerType {
+  typeSpecifierInner (!precTypePointerStar PointerStar)+
+}
+
+PointerStar { "*" }
+
+typeSpecifierInner[@isGroup=Type] {
   StructSpecifier { kw<"struct"> classSpecifier } |
   UnionSpecifier { kw<"union"> classSpecifier } |
   ClassSpecifier { kw<"class"> classSpecifier } |

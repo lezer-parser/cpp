@@ -2628,3 +2628,42 @@ Program (
     )
   )
 )
+
+# Function declaration with pointer type
+void* f();
+==>
+Program (
+  Declaration (
+    PointerType (
+      PrimitiveType,
+      PointerStar
+    ),
+    FunctionDeclarator (
+      Identifier,
+      ParameterList (
+        "(",
+        ")"
+      )
+    )
+  )
+)
+
+# Function declaration with pointer type 2
+void** f();
+==>
+Program (
+  Declaration (
+    PointerType (
+      PrimitiveType,
+      PointerStar,
+      PointerStar
+    ),
+    FunctionDeclarator (
+      Identifier,
+      ParameterList (
+        "(",
+        ")"
+      )
+    )
+  )
+)

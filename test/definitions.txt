@@ -561,3 +561,50 @@ Program (
     )
   )
 )
+
+# Function definition with pointer type
+void* f() {}
+==>
+Program (
+  FunctionDefinition (
+    PointerType (
+      PrimitiveType,
+      PointerStar
+    ),
+    FunctionDeclarator (
+      Identifier,
+      ParameterList (
+        "(",
+        ")"
+      )
+    ),
+    CompoundStatement (
+      "{",
+      "}"
+    )
+  )
+)
+
+# Function definition with pointer type 2
+void** f() {}
+==>
+Program (
+  FunctionDefinition (
+    PointerType (
+      PrimitiveType,
+      PointerStar,
+      PointerStar
+    ),
+    FunctionDeclarator (
+      Identifier,
+      ParameterList (
+        "(",
+        ")"
+      )
+    ),
+    CompoundStatement (
+      "{",
+      "}"
+    )
+  )
+)
