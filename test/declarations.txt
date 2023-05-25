@@ -11,7 +11,7 @@ int x;
 Program(
   NamespaceDefinition(namespace,
     Identifier,
-    DeclarationList(
+    CompoundStatement(
       Declaration(
         PrimitiveType,
         Identifier))),

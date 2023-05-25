@@ -110,7 +110,7 @@ declarationSpecifiers {
 }
 
 LinkageSpecification {
-  kw<"extern"> String (FunctionDefinition | Declaration | DeclarationList)
+  kw<"extern"> String (FunctionDefinition | Declaration | CompoundStatement)
 }
 
 AttributeSpecifier {
@@ -132,10 +132,6 @@ msCallModifier {
 
 msPointerModifier {
   @specialize[@name=MsPointerModifier]<identifier, "__restrict" | "__uptr" | "__sptr" | "_unaligned" | "__unaligned">
-}
-
-DeclarationList {
-  "{" topLevelItem* "}"
 }
 
 declarator {
@@ -797,7 +793,7 @@ ConceptDefinition {
 
 NamespaceDefinition {
   kw<"inline">? kw<"namespace"> (Identifier ("::" kw<"inline">? Identifier)*)?
-  (DeclarationList | "=" (Identifier | ScopedIdentifier) ";")
+  (CompoundStatement | "=" (Identifier | ScopedIdentifier) ";")
 }
 
 UsingDeclaration {
@@ -817,7 +813,7 @@ ModuleDeclaration {
 }
 
 ExportDeclaration {
-  kw<"export"> (topLevelItem | DeclarationList)
+  kw<"export"> topLevelItem
 }
 
 ImportDeclaration {

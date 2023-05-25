@@ -281,10 +281,10 @@ namespace A::B::inline C::D { }
 ==>
 
 Program(
-  NamespaceDefinition(namespace,Identifier,DeclarationList(Declaration(PrimitiveType,Identifier))),
+  NamespaceDefinition(namespace,Identifier,CompoundStatement(Declaration(PrimitiveType,Identifier))),
   LineComment,
-  NamespaceDefinition(namespace,Identifier,Identifier,DeclarationList),
-  NamespaceDefinition(namespace,Identifier,Identifier,inline,Identifier,Identifier,DeclarationList))
+  NamespaceDefinition(namespace,Identifier,Identifier,CompoundStatement),
+  NamespaceDefinition(namespace,Identifier,Identifier,inline,Identifier,Identifier,CompoundStatement))
 
 # Namespace alias definitions
 
