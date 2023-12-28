@@ -574,7 +574,7 @@ FieldDesignator {
     charLiteralStart (EscapeSequence | charLiteralContent) charLiteralEnd
   }
 
-  String {
+  String[isolate] {
     stringLiteralStart (stringLiteralContent | EscapeSequence)* stringLiteralEnd
   }
 
@@ -1011,7 +1011,7 @@ OperatorName<opKw> {
     )
   }
 
-  SystemLibString {
+  SystemLibString[isolate] {
     "<" (![>\n\\] | "\\" _)* ">"
   }
 
@@ -1031,9 +1031,9 @@ OperatorName<opKw> {
 
   HeaderName { "<" ![>]+ ">" }
 
-  LineComment { "//" ("\\" (![\n] | "\\r"? "\\n") | ![\n])* }
+  LineComment[isolate] { "//" ("\\" (![\n] | "\\r"? "\\n") | ![\n])* }
 
-  BlockComment { "/*" blockCommentRest }
+  BlockComment[isolate] { "/*" blockCommentRest }
 
   blockCommentRest { ![*] blockCommentRest | "*" blockCommentAfterStar }
 
