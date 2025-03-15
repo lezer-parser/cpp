@@ -377,7 +377,6 @@ Program(
           BinaryExpression(Identifier, CompareOp, Identifier))),
       CompoundStatement))))
 
-
 # Parameter pack expansions
 
 container<A,B,C...> t1;

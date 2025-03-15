@@ -1077,3 +1077,5 @@ OperatorName<opKw> {
 }
 
 @external propSource cppHighlighting from "./highlight"
+
+@detectDelim
