@@ -1,3 +1,9 @@
+## 1.1.3 (2025-03-16)
+
+### Bug fixes
+
+Enable delimiter detection for the grammar, improving bracket matching and by-syntax cursor navigation.
+
 ## 1.1.2 (2023-12-28)
 
 ### Bug fixes
