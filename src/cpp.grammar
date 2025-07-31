@@ -238,7 +238,7 @@ storageClassSpecifier {
 }
 
 typeQualifier {
-  kw<"const"> | kw<"volatile"> | kw<"restrict"> | kw<"_Atomic"> | kw<"mutable"> | kw<"constexpr"> | kw<"constinit"> | kw<"consteval">
+  kw<"const"> | kw<"volatile"> | kw<"restrict"> | kw<"_Atomic"> | kw<"_Nonnull"> | kw<"mutable"> | kw<"constexpr"> | kw<"constinit"> | kw<"consteval">
 }
 
 typeSpecifier[@isGroup=Type] {
