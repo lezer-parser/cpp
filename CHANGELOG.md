@@ -1,3 +1,9 @@
+## 1.1.4 (2025-12-09)
+
+### Bug fixes
+
+Fix a bug where the parser would get stuck trying to parse a big expression with multiple less-than operators as a template type.
+
 ## 1.1.3 (2025-03-16)
 
 ### Bug fixes
