@@ -473,6 +473,8 @@ UnaryExpression {
   (LogicOp<"!"> | ArithOp<"+" | "-"> | BitOp<"~">) !suffix expression
 }
 
+lessThan[@name=CompareOp,@dynamicPrecedence=1] { @extend<"<"> }
+
 // Note: operators that conflict with other tokens are defined using
 // inline rules (so that the tokens can be shared), others directly using
 // ArithOp-style token helpers.
@@ -486,7 +488,7 @@ BinaryExpression {
   expression !bitAnd BitOp { "&" } expression |
   expression !equal CompareOp<"==" | "!="> expression |
   expression !greaterLess
-    (CompareOp<"<=" | ">=" | "<=>"> | @extend[@name=CompareOp]<"<"> | @extend[@name=CompareOp]<templateArgsEnd, ">">) expression |
+    (CompareOp<"<=" | ">=" | "<=>"> | lessThan | @extend[@name=CompareOp]<templateArgsEnd, ">">) expression |
   expression !bitShift BitOp<"<<" | ">>"> expression |
   expression !concat incDec expression
 }
@@ -866,7 +868,7 @@ balancedTokens {
   attributeIdentifier |
   incDec | ArithOp<"+" | "-"> | ArithOp { "*" } | ArithOp<"/" | "%"> | LogicOp { "||" | "&&" } |
   BitOp<"|"> | BitOp<"^"> | BitOp { "&" } | CompareOp<"==" | "!="> | CompareOp<"<=" | ">=" | "<=>"> |
-  @extend[@name=CompareOp]<"<"> | @extend[@name=CompareOp]<templateArgsEnd, ">"> | BitOp<"<<" | ">>"> |
+  lessThan | @extend[@name=CompareOp]<templateArgsEnd, ">"> | BitOp<"<<" | ">>"> |
   UpdateOp |
   ";" | ":" | "," | "..." | "::" | "." | "->" |
   Number | String | RawString | CharLiteral

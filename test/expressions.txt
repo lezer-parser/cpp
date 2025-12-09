@@ -718,3 +718,23 @@ void findNextMove() {
 
 Program(FunctionDefinition(PrimitiveType,FunctionDeclarator(Identifier,ParameterList),CompoundStatement(
   ExpressionStatement(AssignmentExpression(Identifier,InitializerList(Identifier,Identifier))))))
+
+# Chain of less-than operators
+
+if (a < 0 || b < 0 || c < 0 || d < 0) b();
+
+==>
+
+Program(IfStatement(if,
+  ConditionClause(
+    BinaryExpression(
+      BinaryExpression(
+        BinaryExpression(
+          BinaryExpression(Identifier,CompareOp,Number),
+          LogicOp,
+          BinaryExpression(Identifier,CompareOp,Number)),
+        LogicOp,
+        BinaryExpression(Identifier,CompareOp,Number)),
+      LogicOp,
+      BinaryExpression(Identifier,CompareOp,Number))),
+  ExpressionStatement(CallExpression(Identifier,ArgumentList))))
