@@ -581,6 +581,8 @@ FieldDesignator {
   }
 
   Macro[@dynamicPrecedence=-10] { MacroName (whitespace? ArgumentList?) }
+
+  BlockComment { blockCommentOpen (blockCommentContent | blockCommentLineBreak)* blockCommentClose }
 }
 
 ConcatenatedString {
@@ -1035,13 +1037,9 @@ OperatorName<opKw> {
 
   LineComment[isolate] { "//" ("\\" (![\n] | "\\r"? "\\n") | ![\n])* }
 
-  BlockComment[isolate] { "/*" blockCommentRest }
+  blockCommentOpen { "/*" }
 
-  blockCommentRest { ![*] blockCommentRest | "*" blockCommentAfterStar }
-
-  blockCommentAfterStar { "/" | "*" blockCommentAfterStar | ![/*] blockCommentRest }
-
-  @precedence { LineComment, BlockComment, ArithOp }
+  @precedence { LineComment, blockCommentOpen, ArithOp }
 
   ArithOp<expr> { expr }
 
@@ -1076,6 +1074,12 @@ OperatorName<opKw> {
 
   @precedence { stringLiteralStart, charLiteralStart, identifier }
   @precedence { stringLiteralStart, charLiteralStart, attributeIdentifier }
+}
+
+@local tokens {
+  blockCommentClose { "*/" }
+  blockCommentLineBreak { "\n" }
+  @else blockCommentContent
 }
 
 @external propSource cppHighlighting from "./highlight"
