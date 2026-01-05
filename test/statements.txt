@@ -317,3 +317,11 @@ Program(ForStatement(for,
   BinaryExpression(Identifier,CompareOp,Number),
   CommaExpression(UpdateExpression(Identifier, UpdateOp),UpdateExpression(Identifier, UpdateOp)),
   CompoundStatement))
+
+# Prefers Call Expression to Function Declaration
+
+foo(a, b
+
+==>
+
+Program(ExpressionStatement(CallExpression(Identifier,ArgumentList(Identifier,",",Identifier,⚠)),⚠))

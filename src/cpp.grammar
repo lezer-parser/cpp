@@ -532,7 +532,7 @@ SubscriptExpression {
   expression !subscript "[" expression "]"
 }
 
-CallExpression {
+CallExpression[@dynamicPrecedence=1] {
   expression !arguments ArgumentList |
   primitiveType ~afterPrimitive ArgumentList
 }
