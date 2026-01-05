@@ -1,3 +1,9 @@
+## 1.1.5 (2026-01-05)
+
+### Bug fixes
+
+Improve handling of unclosed block comments.
+
 ## 1.1.4 (2025-12-09)
 
 ### Bug fixes
