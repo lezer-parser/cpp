@@ -582,7 +582,7 @@ FieldDesignator {
 
   Macro[@dynamicPrecedence=-10] { MacroName (whitespace? ArgumentList?) }
 
-  BlockComment { blockCommentOpen (blockCommentContent | blockCommentLineBreak)* blockCommentClose }
+  BlockComment[isolate] { blockCommentOpen (blockCommentContent | blockCommentLineBreak)* blockCommentClose }
 }
 
 ConcatenatedString {
