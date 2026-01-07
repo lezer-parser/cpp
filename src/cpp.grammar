@@ -800,8 +800,12 @@ NamespaceDefinition {
   (CompoundStatement | "=" (Identifier | ScopedIdentifier) ";")
 }
 
+ScopedIdentifierList {
+  ScopedIdentifier ("," ScopedIdentifier)*
+}
+
 UsingDeclaration {
-  kw<"using"> (kw<"namespace"> | kw<"enum">)? (Identifier | ScopedIdentifier) ";"
+  kw<"using"> (kw<"namespace"> | kw<"enum">)? (Identifier | ScopedIdentifierList) ";"
 }
 
 AliasDeclaration {
