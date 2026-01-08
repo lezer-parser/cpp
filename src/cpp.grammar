@@ -801,7 +801,7 @@ NamespaceDefinition {
 }
 
 UsingDeclaration {
-  kw<"using"> (kw<"namespace"> | kw<"enum">)? (Identifier | ScopedIdentifier) ";"
+  kw<"using"> (kw<"namespace"> | kw<"enum">)? commaSep1<Identifier | ScopedIdentifier> ";"
 }
 
 AliasDeclaration {

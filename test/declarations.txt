@@ -26,6 +26,7 @@ using c::d;
 using ::e::f::g;
 using h = i::j;
 using namespace std;
+using x::y, z::q;
 
 template <typename T>
 using a = typename b<T>::c;
@@ -46,6 +47,9 @@ Program(
     TypeIdentifier,
     TypeDescriptor(ScopedTypeIdentifier(NamespaceIdentifier, TypeIdentifier))),
   UsingDeclaration(using, namespace, Identifier),
+  UsingDeclaration(using,
+    ScopedIdentifier(NamespaceIdentifier, Identifier),
+    ScopedIdentifier(NamespaceIdentifier, Identifier)),
   TemplateDeclaration(template,
     TemplateParameterList(
       TypeParameterDeclaration(typename, TypeIdentifier)),
