@@ -1,3 +1,5 @@
+**This repository has moved to https://code.haverbeke.berlin/lezer/cpp**
+
 # @lezer/cpp
 
 This is a C++ grammar for the
